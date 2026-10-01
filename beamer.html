@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beamer - Informatics TCG</title>
+    <!-- Firebase SDK (Kompakt für Realtime Database, Version 8.10.1) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        :root { --primary: #2c3e50; --bg: #ecf0f1; --text: #333; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 40px; }
+        .header { text-align: center; margin-bottom: 40px; }
+        
+        .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        
+        .problem-box { background: var(--primary); color: white; padding: 30px; border-radius: 10px; font-size: 1.5em; text-align: center; }
+        
+        .leaderboard { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .leaderboard-row { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #eee; font-size: 1.2em; }
+        .leaderboard-row:nth-child(even) { background-color: #f9f9f9; }
+        .rank-1 { background-color: #f1c40f !important; font-weight: bold; color: black; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Informatics TCG</h1>
+        <p>Geht auf <b>deine-uni-url.at/tcg</b> um ein Team zu gründen oder beizutreten!</p>
+    </div>
+
+    <div class="layout">
+        <div>
+            <div class="problem-box">
+                <h2>Meilenstein: Der Personal Computer</h2>
+                <p>Baut eine intuitive Maschine für den Endnutzer.</p>
+                <hr>
+                <p style="font-size: 0.8em; color: #bdc3c7;">Benötigte Expertise:<br>
+                12 Theorie | 15 Software | 18 Hardware | 22 Design | 15 Vision</p>
+                <p style="font-size: 0.8em; margin-top: 20px;">Jedes Team darf bis zu <b>5 Karten</b> kombinieren.</p>
+            </div>
+        </div>
+
+        <div class="leaderboard" id="leaderboard">
+            <h2 style="text-align: center;">Live Leaderboard (Geringste Fehlerpunkte)</h2>
+            <div id="lb-content">
+                <p style="text-align: center; color: #7f8c8d;">Warte auf Einreichungen...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // HIER DEINE ECHTE FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyHK3ffOccGryw03jQphYXMpP3tC6Xgpk",
+            authDomain: "informatik-tcg.firebaseapp.com",
+            projectId: "informatik-tcg",
+            // WICHTIG: Ersetzt, je nachdem ob US oder EU. Wenn es nicht geht, ".firebaseio.com" statt "europe-west1.firebasedatabase.app" probieren
+            databaseURL: "https://informatik-tcg-default-rtdb.europe-west1.firebasedatabase.app", 
+            storageBucket: "informatik-tcg.firebasestorage.app",
+            messagingSenderId: "212430356994",
+            appId: "1:212430356994:web:9a3947fbe34701bfbcdd1b",
+            measurementId: "G-J8YP14HRVM"
+        };
+        
+        // Wenn du beim Einrichten der Datenbank als Standort "USA" gewählt hast, nutze diese URL:
+        // firebaseConfig.databaseURL = "https://informatik-tcg-default-rtdb.firebaseio.com";
+
+        // Firebase initialisieren (Scharf geschaltet)
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const targetStats = { Theorie: 12, Software: 15, Hardware: 18, Design: 22, Vision: 15 };
+        const attributes = ["Theorie", "Software", "Hardware", "Design", "Vision"];
+        
+        let submissions = [];
+
+        function renderLeaderboard() {
+            submissions.sort((a, b) => a.error - b.error);
+            let html = "";
+            submissions.forEach((sub, index) => {
+                let rankClass = index === 0 ? "rank-1" : "";
+                html += `<div class="leaderboard-row ${rankClass}">
+                            <span>#${index + 1} - Team ${sub.teamPin}</span>
+                            <span>${sub.error} Fehlerpunkte</span>
+                         </div>`;
+            });
+            document.getElementById("lb-content").innerHTML = html;
+        }
+
+        // ECHTE FIREBASE LOGIK
+        db.ref('leaderboard').on('child_added', (snapshot) => {
+            let data = snapshot.val();
+            let totalError = 0;
+            
+            attributes.forEach(a => {
+                totalError += Math.abs(data.stats[a] - targetStats[a]);
+            });
+
+            submissions.push({ teamPin: data.teamPin, error: totalError });
+            renderLeaderboard();
+        });
+        
+    </script>
+</body>
+</html>
+
