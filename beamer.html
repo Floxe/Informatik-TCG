@@ -4,18 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beamer - Informatics TCG</title>
-    <!-- Firebase SDK (Kompakt für Realtime Database, Version 8.10.1) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         :root { --primary: #2c3e50; --bg: #ecf0f1; --text: #333; }
         body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 40px; }
         .header { text-align: center; margin-bottom: 40px; }
-        
         .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-        
         .problem-box { background: var(--primary); color: white; padding: 30px; border-radius: 10px; font-size: 1.5em; text-align: center; }
-        
         .leaderboard { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .leaderboard-row { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #eee; font-size: 1.2em; }
         .leaderboard-row:nth-child(even) { background-color: #f9f9f9; }
@@ -39,8 +35,8 @@
                 12 Theorie | 15 Software | 18 Hardware | 22 Design | 15 Vision</p>
                 <p style="font-size: 0.8em; margin-top: 20px;">Jedes Team darf bis zu <b>5 Karten</b> kombinieren.</p>
                 <p style="font-size: 0.8em; margin-top: 20px;"><b>Jede</b> Karte besitzt <b>jedes</b> Attribut mit Werten <b>1-5</b></p>
-                <p style="font-size: 0.8em; margin-top: 20px;"> Benötigte Expertise soll <b>möglichst genau</b> erreicht werden. </p>
-                <p style="font-size: 0.8em; margin-top: 20px;"> Zu viel / zu wenig gibt Punkteverlust</p>
+                <p style="font-size: 0.8em; margin-top: 20px;">Benötigte Expertise soll <b>möglichst genau</b> erreicht werden.</p>
+                <p style="font-size: 0.8em; margin-top: 20px;">Zu viel / zu wenig gibt Punkteverlust!</p>
             </div>
         </div>
 
@@ -53,12 +49,10 @@
     </div>
 
     <script>
-        // HIER DEINE ECHTE FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyCyHK3ffOccGryw03jQphYXMpP3tC6Xgpk",
             authDomain: "informatik-tcg.firebaseapp.com",
             projectId: "informatik-tcg",
-            // WICHTIG: Ersetzt, je nachdem ob US oder EU. Wenn es nicht geht, ".firebaseio.com" statt "europe-west1.firebasedatabase.app" probieren
             databaseURL: "https://informatik-tcg-default-rtdb.europe-west1.firebasedatabase.app", 
             storageBucket: "informatik-tcg.firebasestorage.app",
             messagingSenderId: "212430356994",
@@ -66,10 +60,6 @@
             measurementId: "G-J8YP14HRVM"
         };
         
-        // Wenn du beim Einrichten der Datenbank als Standort "USA" gewählt hast, nutze diese URL:
-        // firebaseConfig.databaseURL = "https://informatik-tcg-default-rtdb.firebaseio.com";
-
-        // Firebase initialisieren (Scharf geschaltet)
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
@@ -84,14 +74,13 @@
             submissions.forEach((sub, index) => {
                 let rankClass = index === 0 ? "rank-1" : "";
                 html += `<div class="leaderboard-row ${rankClass}">
-                            <span>#${index + 1} - Team ${sub.teamPin}</span>
+                            <span>#${index + 1} - <b>${sub.teamName}</b> (PIN: ${sub.teamPin})</span>
                             <span>${sub.error} Fehlerpunkte</span>
                          </div>`;
             });
             document.getElementById("lb-content").innerHTML = html;
         }
 
-        // ECHTE FIREBASE LOGIK
         db.ref('leaderboard').on('child_added', (snapshot) => {
             let data = snapshot.val();
             let totalError = 0;
@@ -100,10 +89,12 @@
                 totalError += Math.abs(data.stats[a] - targetStats[a]);
             });
 
-            submissions.push({ teamPin: data.teamPin, error: totalError });
+            // Fallback falls ein Team keinen Namen hat
+            let tName = data.teamName ? data.teamName : "Team " + data.teamPin;
+
+            submissions.push({ teamPin: data.teamPin, teamName: tName, error: totalError });
             renderLeaderboard();
         });
-        
     </script>
 </body>
 </html>
