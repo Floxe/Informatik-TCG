@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Informatics TCG - Student</title>
-    <!-- Firebase SDK (Kompakt für Realtime Database, Version 8.10.1 für einfache Kompatibilität) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <!-- QR Code Generator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --primary: #2c3e50; --secondary: #18bc9c; --bg: #ecf0f1; --text: #333; }
@@ -15,15 +13,20 @@
         .container { background: white; padding: 20px; border-radius: 10px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .btn { background: var(--secondary); color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-size: 1.1em; cursor: pointer; margin-top: 10px; }
         .btn:disabled { background: #95a5a6; }
-        input { padding: 10px; width: calc(100% - 24px); font-size: 1.2em; text-align: center; margin-bottom: 10px; }
+        input { padding: 10px; width: calc(100% - 24px); font-size: 1.2em; text-align: center; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; }
         
         .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .card { border: 2px solid #bdc3c7; border-radius: 5px; padding: 10px; cursor: pointer; user-select: none; }
+        .card { border: 2px solid #bdc3c7; border-radius: 5px; padding: 5px; cursor: pointer; user-select: none; position: relative; }
         .card.selected { border-color: var(--secondary); background: #e8f8f5; }
-        .card .emoji { font-size: 2em; }
-        #qrcode { display: flex; justify-content: center; margin: 20px 0; }
+        .card img { width: 100%; height: 120px; object-fit: cover; border-radius: 3px; }
+        .card h4 { margin: 5px 0; font-size: 0.9em; }
         
+        .info-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.8); border-radius: 50%; width: 25px; height: 25px; display: flex; justify-content: center; align-items: center; text-decoration: none; font-size: 14px; font-weight: bold; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 10; }
+        
+        #qrcode { display: flex; justify-content: center; margin: 20px 0; }
         #view-start, #view-leader, #view-member { display: none; }
+        
+        .success-msg { background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-top: 15px; font-weight: bold; display: none; }
     </style>
 </head>
 <body>
@@ -34,6 +37,7 @@
         <!-- START VIEW -->
         <div id="view-start">
             <p>Du hast 3 zufällige Karten im Deck.</p>
+            <input type="text" id="team-name" placeholder="Team-Name (z.B. Turingtester 🤖)">
             <button class="btn" onclick="createTeam()">Neues Team gründen</button>
             <hr style="margin: 20px 0;">
             <input type="text" id="join-pin" placeholder="Team-PIN (z.B. 1234)">
@@ -42,7 +46,8 @@
 
         <!-- LEADER VIEW -->
         <div id="view-leader">
-            <h2>Team: <span id="team-pin-display"></span></h2>
+            <h2>Team: <span id="team-name-display"></span></h2>
+            <p>PIN: <b id="team-pin-display"></b></p>
             <p>Lass deine Teammitglieder diesen QR-Code scannen (oder die PIN eingeben):</p>
             <div id="qrcode"></div>
             
@@ -50,6 +55,7 @@
             <div class="cards-grid" id="pool-grid"></div>
             
             <button class="btn" id="submit-btn" onclick="submitSolution()" disabled>Lösung an Beamer senden</button>
+            <div id="success-message" class="success-msg">Eure Lösung wurde eingereicht. Bitte wartet, bis die Runde am Beamer beendet wurde.</div>
         </div>
 
         <!-- MEMBER VIEW -->
@@ -61,12 +67,10 @@
     </div>
 
     <script>
-        // HIER DEINE ECHTE FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyCyHK3ffOccGryw03jQphYXMpP3tC6Xgpk",
             authDomain: "informatik-tcg.firebaseapp.com",
             projectId: "informatik-tcg",
-            // WICHTIG: Ersetzt, je nachdem ob US oder EU. Wenn es nicht geht, ".firebaseio.com" statt "europe-west1.firebasedatabase.app" probieren
             databaseURL: "https://informatik-tcg-default-rtdb.europe-west1.firebasedatabase.app",
             storageBucket: "informatik-tcg.firebasestorage.app",
             messagingSenderId: "212430356994",
@@ -74,28 +78,26 @@
             measurementId: "G-J8YP14HRVM"
         };
         
-        // Wenn du beim Einrichten der Datenbank als Standort "USA" gewählt hast, nutze diese URL:
-        // firebaseConfig.databaseURL = "https://informatik-tcg-default-rtdb.firebaseio.com";
-
-        // Firebase initialisieren (Scharf geschaltet)
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         const attributes = ["Theorie", "Software", "Hardware", "Design", "Vision"];
         const allCards = {
-            turing: { name: "Alan Turing", emoji: "🕵️‍♂️", stats: { Theorie: 5, Software: 4, Hardware: 3, Design: 1, Vision: 5 } },
-            allen: { name: "Frances Allen", emoji: "👩‍💻", stats: { Theorie: 3, Software: 5, Hardware: 3, Design: 1, Vision: 4 } },
-            clarke: { name: "Edith Clarke", emoji: "⚡", stats: { Theorie: 5, Software: 1, Hardware: 5, Design: 1, Vision: 4 } },
-            ellis: { name: "Clarence Ellis", emoji: "🤝", stats: { Theorie: 3, Software: 4, Hardware: 1, Design: 5, Vision: 5 } },
-            kare: { name: "Susan Kare", emoji: "🎨", stats: { Theorie: 1, Software: 2, Hardware: 1, Design: 5, Vision: 4 } }
+            turing: { name: "Alan Turing", img: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Alan_Turing_Aged_16.jpg", link: "https://de.wikipedia.org/wiki/Alan_Turing", stats: { Theorie: 5, Software: 4, Hardware: 3, Design: 1, Vision: 5 } },
+            allen: { name: "Frances E. Allen", img: "https://upload.wikimedia.org/wikipedia/commons/b/b3/Frances_E._Allen.jpg", link: "https://de.wikipedia.org/wiki/Frances_E._Allen", stats: { Theorie: 3, Software: 5, Hardware: 3, Design: 1, Vision: 4 } },
+            clarke: { name: "Edith Clarke", img: "https://upload.wikimedia.org/wikipedia/commons/e/ea/Edith_Clarke.jpg", link: "https://de.wikipedia.org/wiki/Edith_Clarke", stats: { Theorie: 5, Software: 1, Hardware: 5, Design: 1, Vision: 4 } },
+            ellis: { name: "Clarence Ellis", img: "https://upload.wikimedia.org/wikipedia/commons/6/60/Clarence_Skip_Ellis.jpg", link: "https://en.wikipedia.org/wiki/Clarence_Ellis_(computer_scientist)", stats: { Theorie: 3, Software: 4, Hardware: 1, Design: 5, Vision: 5 } },
+            kare: { name: "Susan Kare", img: "https://upload.wikimedia.org/wikipedia/commons/7/77/Susan_Kare.jpg", link: "https://de.wikipedia.org/wiki/Susan_Kare", stats: { Theorie: 1, Software: 2, Hardware: 1, Design: 5, Vision: 4 } }
         };
 
         // Simuliere lokales Deck
         let myDeck = ["turing", "clarke", "kare"]; 
         let currentRoom = "";
+        let teamName = "";
         let isLeader = false;
+        let hasSubmitted = false;
         
-        let teamPool = []; 
+        let teamPoolSet = new Set(); // Verhindert doppelte Karten
         let selectedCards = []; 
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -109,20 +111,21 @@
         }
 
         function createTeam() {
+            teamName = document.getElementById("team-name").value.trim() || "Anonymes Team";
             isLeader = true;
             currentRoom = Math.floor(1000 + Math.random() * 9000).toString(); 
             
             document.getElementById("view-start").style.display = "none";
             document.getElementById("view-leader").style.display = "block";
             document.getElementById("team-pin-display").innerText = currentRoom;
+            document.getElementById("team-name-display").innerText = teamName;
 
-            // QR Code Link generieren
             let joinUrl = window.location.href.split('?')[0] + "?room=" + currentRoom;
             new QRCode(document.getElementById("qrcode"), { text: joinUrl, width: 128, height: 128 });
 
             addCardsToPool(myDeck);
 
-            // ECHTE FIREBASE LOGIK
+            // Auf neue Mitglieder warten
             db.ref('rooms/' + currentRoom).on('child_added', (snapshot) => {
                 let memberCards = snapshot.val();
                 addCardsToPool(memberCards);
@@ -139,10 +142,14 @@
 
             let grid = document.getElementById("my-cards-grid");
             myDeck.forEach(c => {
-                grid.innerHTML += `<div class="card"><div class="emoji">${allCards[c].emoji}</div><h4>${allCards[c].name}</h4></div>`;
+                let card = allCards[c];
+                grid.innerHTML += `<div class="card">
+                                      <a href="${card.link}" target="_blank" class="info-btn" title="Mehr Infos">ℹ️</a>
+                                      <img src="${card.img}" alt="${card.name}">
+                                      <h4>${card.name}</h4>
+                                   </div>`;
             });
 
-            // ECHTE FIREBASE LOGIK
             let myId = Math.random().toString(36).substring(7);
             db.ref('rooms/' + currentRoom + '/' + myId).set(myDeck);
         }
@@ -150,12 +157,22 @@
         function addCardsToPool(cardsArray) {
             let grid = document.getElementById("pool-grid");
             cardsArray.forEach(cardKey => {
+                // Prüfen ob die Karte schon im Pool liegt
+                if(teamPoolSet.has(cardKey)) return;
+                
+                teamPoolSet.add(cardKey);
                 let card = allCards[cardKey];
                 let div = document.createElement("div");
                 div.className = "card";
-                div.innerHTML = `<div class="emoji">${card.emoji}</div><h4>${card.name}</h4>`;
+                
+                // HTML für die Karte inkl Info-Button
+                div.innerHTML = `<a href="${card.link}" target="_blank" class="info-btn" title="Mehr Infos" onclick="event.stopPropagation()">ℹ️</a>
+                                 <img src="${card.img}" alt="${card.name}">
+                                 <h4>${card.name}</h4>`;
                 
                 div.onclick = () => {
+                    if(hasSubmitted) return; // Nach Abgabe keine Änderungen mehr erlaubt
+                    
                     if (div.classList.contains("selected")) {
                         div.classList.remove("selected");
                         selectedCards.splice(selectedCards.indexOf(cardKey), 1);
@@ -174,21 +191,24 @@
         }
 
         function submitSolution() {
+            if(hasSubmitted) return;
+            hasSubmitted = true;
+            
             let teamStats = { Theorie: 0, Software: 0, Hardware: 0, Design: 0, Vision: 0 };
             selectedCards.forEach(key => {
                 let s = allCards[key].stats;
                 for (let a of attributes) { teamStats[a] += s[a]; }
             });
 
-            // ECHTE FIREBASE LOGIK
             db.ref('leaderboard').push({
                 teamPin: currentRoom,
+                teamName: teamName,
                 stats: teamStats
             });
             
-            alert("Lösung erfolgreich an den Beamer gesendet!");
-            document.getElementById("submit-btn").disabled = true;
-            document.getElementById("submit-btn").innerText = "Lösung eingereicht";
+            // UI Feedback statt Windows Alert
+            document.getElementById("submit-btn").style.display = "none";
+            document.getElementById("success-message").style.display = "block";
         }
     </script>
 </body>
