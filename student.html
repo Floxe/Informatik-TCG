@@ -84,14 +84,35 @@
         const attributes = ["Theorie", "Software", "Hardware", "Design", "Vision"];
         const allCards = {
             turing: { name: "Alan Turing", img: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Alan_Turing_Aged_16.jpg", link: "https://de.wikipedia.org/wiki/Alan_Turing", stats: { Theorie: 5, Software: 4, Hardware: 3, Design: 1, Vision: 5 } },
-            allen: { name: "Frances E. Allen", img: "https://upload.wikimedia.org/wikipedia/commons/b/b3/Frances_E._Allen.jpg", link: "https://de.wikipedia.org/wiki/Frances_E._Allen", stats: { Theorie: 3, Software: 5, Hardware: 3, Design: 1, Vision: 4 } },
-            clarke: { name: "Edith Clarke", img: "https://upload.wikimedia.org/wikipedia/commons/e/ea/Edith_Clarke.jpg", link: "https://de.wikipedia.org/wiki/Edith_Clarke", stats: { Theorie: 5, Software: 1, Hardware: 5, Design: 1, Vision: 4 } },
-            ellis: { name: "Clarence Ellis", img: "https://upload.wikimedia.org/wikipedia/commons/6/60/Clarence_Skip_Ellis.jpg", link: "https://en.wikipedia.org/wiki/Clarence_Ellis_(computer_scientist)", stats: { Theorie: 3, Software: 4, Hardware: 1, Design: 5, Vision: 5 } },
-            kare: { name: "Susan Kare", img: "https://upload.wikimedia.org/wikipedia/commons/7/77/Susan_Kare.jpg", link: "https://de.wikipedia.org/wiki/Susan_Kare", stats: { Theorie: 1, Software: 2, Hardware: 1, Design: 5, Vision: 4 } }
+            allen: { name: "Frances E. Allen", img: "https://upload.wikimedia.org/wikipedia/commons/1/15/Allen_mg_2528-3750K-b.jpg", link: "https://de.wikipedia.org/wiki/Frances_E._Allen", stats: { Theorie: 3, Software: 5, Hardware: 3, Design: 1, Vision: 4 } },
+            clarke: { name: "Edith Clarke", img: "https://upload.wikimedia.org/wikipedia/commons/9/92/Edith_Clarke.jpg", link: "https://de.wikipedia.org/wiki/Edith_Clarke", stats: { Theorie: 5, Software: 1, Hardware: 5, Design: 1, Vision: 4 } },
+            ellis: { name: "Clarence Ellis", img: "https://siebelschool.illinois.edu/_sitemanager/viewphoto.aspx?id=9149&s=1200", link: "https://en.wikipedia.org/wiki/Clarence_Ellis_(computer_scientist)", stats: { Theorie: 3, Software: 4, Hardware: 1, Design: 5, Vision: 5 } },
+            kare: { name: "Susan Kare", img: "https://upload.wikimedia.org/wikipedia/commons/8/88/SusanKare2019photo.jpg", link: "https://de.wikipedia.org/wiki/Susan_Kare", stats: { Theorie: 1, Software: 2, Hardware: 1, Design: 5, Vision: 4 } }
         };
 
-        // Simuliere lokales Deck
-        let myDeck = ["turing", "clarke", "kare"]; 
+        // ==========================================
+        // NEU: Lokales Deck zufällig generieren / laden
+        // ==========================================
+        let myDeck = [];
+        const savedDeck = localStorage.getItem("myInformaticsTCGDeck");
+
+        if (savedDeck) {
+            // Wenn das Deck schon existiert, lade es
+            myDeck = JSON.parse(savedDeck);
+        } else {
+            // Generiere ein neues, zufälliges Deck mit 3 einzigartigen Karten
+            let allKeys = Object.keys(allCards);
+            // Array mischen (Fisher-Yates Shuffle)
+            for (let i = allKeys.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allKeys[i], allKeys[j]] = [allKeys[j], allKeys[i]];
+            }
+            myDeck = allKeys.slice(0, 3); // Ziehe die ersten 3
+            // Speichere es dauerhaft im Browser
+            localStorage.setItem("myInformaticsTCGDeck", JSON.stringify(myDeck));
+        }
+        // ==========================================
+
         let currentRoom = "";
         let teamName = "";
         let isLeader = false;
