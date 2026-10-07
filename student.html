@@ -11,7 +11,7 @@
         :root { --primary: #2c3e50; --secondary: #18bc9c; --bg: #ecf0f1; --text: #333; }
         body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 10px; text-align: center; }
         .container { background: white; padding: 20px; border-radius: 10px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn { background: var(--secondary); color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-size: 1.1em; cursor: pointer; margin-top: 10px; }
+        .btn { background: var(--secondary); color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-size: 1.1em; cursor: pointer; margin-top: 10px; font-weight: bold; }
         .btn:disabled { background: #95a5a6; }
         input { padding: 10px; width: calc(100% - 24px); font-size: 1.2em; text-align: center; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; }
         
@@ -24,7 +24,7 @@
         .info-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.8); border-radius: 50%; width: 25px; height: 25px; display: flex; justify-content: center; align-items: center; text-decoration: none; font-size: 14px; font-weight: bold; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 10; }
         
         #qrcode { display: flex; justify-content: center; margin: 20px 0; }
-        #view-start, #view-leader, #view-member { display: none; }
+        #view-start, #view-leader, #view-member, #view-reward { display: none; }
         
         .success-msg { background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-top: 15px; font-weight: bold; display: none; }
     </style>
@@ -32,11 +32,19 @@
 <body>
 
     <div class="container">
-        <h1>Mein Deck</h1>
         
+        <!-- REWARD VIEW (Erscheint, wenn man QR am Ende der Runde scannt) -->
+        <div id="view-reward">
+            <h2>🎉 Neue Karte freigeschaltet!</h2>
+            <p>Du hast diese Karte für dein persönliches Deck gesammelt:</p>
+            <div id="reward-card-container" style="margin-bottom: 20px;"></div>
+            <button class="btn" onclick="window.location.href = window.location.pathname;">Weiter zum Hauptmenü</button>
+        </div>
+
         <!-- START VIEW -->
         <div id="view-start">
-            <p>Du hast 3 zufällige Karten im Deck.</p>
+            <h1>Mein Deck</h1>
+            <p>Du hast <span id="deck-count">3</span> Karten in deinem Deck.</p>
             <input type="text" id="team-name" placeholder="Team-Name (z.B. Turingtester 🤖)">
             <button class="btn" onclick="createTeam()">Neues Team gründen</button>
             <hr style="margin: 20px 0;">
@@ -47,7 +55,7 @@
         <!-- LEADER VIEW -->
         <div id="view-leader">
             <h2>Team: <span id="team-name-display"></span></h2>
-            <p>PIN: <b id="team-pin-display"></b></p>
+            <p>PIN: <b id="team-pin-display" style="font-size: 1.5em; color: var(--primary);"></b></p>
             <p>Lass deine Teammitglieder diesen QR-Code scannen (oder die PIN eingeben):</p>
             <div id="qrcode"></div>
             
@@ -82,27 +90,30 @@
         const db = firebase.database();
 
         const attributes = ["Theorie", "Software", "Hardware", "Design", "Vision"];
+        
+        // NEU: Grace Hopper hinzugefügt
         const allCards = {
             turing: { name: "Alan Turing", img: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Alan_Turing_Aged_16.jpg", link: "https://de.wikipedia.org/wiki/Alan_Turing", stats: { Theorie: 5, Software: 4, Hardware: 3, Design: 1, Vision: 5 } },
             allen: { name: "Frances E. Allen", img: "https://upload.wikimedia.org/wikipedia/commons/1/15/Allen_mg_2528-3750K-b.jpg", link: "https://de.wikipedia.org/wiki/Frances_E._Allen", stats: { Theorie: 3, Software: 5, Hardware: 3, Design: 1, Vision: 4 } },
             clarke: { name: "Edith Clarke", img: "https://upload.wikimedia.org/wikipedia/commons/9/92/Edith_Clarke.jpg", link: "https://de.wikipedia.org/wiki/Edith_Clarke", stats: { Theorie: 5, Software: 1, Hardware: 5, Design: 1, Vision: 4 } },
             ellis: { name: "Clarence Ellis", img: "https://siebelschool.illinois.edu/_sitemanager/viewphoto.aspx?id=9149&s=1200", link: "https://en.wikipedia.org/wiki/Clarence_Ellis_(computer_scientist)", stats: { Theorie: 3, Software: 4, Hardware: 1, Design: 5, Vision: 5 } },
-            kare: { name: "Susan Kare", img: "https://upload.wikimedia.org/wikipedia/commons/8/88/SusanKare2019photo.jpg", link: "https://de.wikipedia.org/wiki/Susan_Kare", stats: { Theorie: 1, Software: 2, Hardware: 1, Design: 5, Vision: 4 } }
+            kare: { name: "Susan Kare", img: "https://upload.wikimedia.org/wikipedia/commons/8/88/SusanKare2019photo.jpg", link: "https://de.wikipedia.org/wiki/Susan_Kare", stats: { Theorie: 1, Software: 2, Hardware: 1, Design: 5, Vision: 4 } },
+            hopper: { name: "Grace Hopper", img: "https://upload.wikimedia.org/wikipedia/commons/a/ad/Commodore_Grace_M._Hopper%2C_USN_%28covered%29.jpg", link: "https://de.wikipedia.org/wiki/Grace_Hopper", stats: { Theorie: 4, Software: 5, Hardware: 2, Design: 1, Vision: 5 } }
         };
 
-        // Lokales Deck generieren oder laden
         let myDeck = [];
         const savedDeck = localStorage.getItem("myInformaticsTCGDeck");
 
         if (savedDeck) {
             myDeck = JSON.parse(savedDeck);
         } else {
-            let allKeys = Object.keys(allCards);
-            for (let i = allKeys.length - 1; i > 0; i--) {
+            // Nur die Startkarten (ohne die neue Reward-Karte) mischen
+            let startKeys = ["turing", "allen", "clarke", "ellis", "kare"];
+            for (let i = startKeys.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [allKeys[i], allKeys[j]] = [allKeys[j], allKeys[i]];
+                [startKeys[i], startKeys[j]] = [startKeys[j], startKeys[i]];
             }
-            myDeck = allKeys.slice(0, 3);
+            myDeck = startKeys.slice(0, 3);
             localStorage.setItem("myInformaticsTCGDeck", JSON.stringify(myDeck));
         }
 
@@ -110,17 +121,38 @@
         let teamName = "";
         let isLeader = false;
         let hasSubmitted = false;
-        
-        let teamPoolSet = new Set(); // Verhindert doppelte Karten
+        let teamPoolSet = new Set();
         let selectedCards = []; 
 
         const urlParams = new URLSearchParams(window.location.search);
         const urlRoom = urlParams.get('room');
+        const urlNewCard = urlParams.get('newcard'); // NEU: Check auf Reward-Karte
         
-        if(urlRoom) {
+        // VIEW-ROUTING
+        if (urlNewCard && allCards[urlNewCard]) {
+            // Spieler hat Reward QR-Code gescannt
+            if (!myDeck.includes(urlNewCard)) {
+                myDeck.push(urlNewCard); // Karte ins Deck
+                localStorage.setItem("myInformaticsTCGDeck", JSON.stringify(myDeck));
+            }
+            
+            document.getElementById("view-reward").style.display = "block";
+            
+            let card = allCards[urlNewCard];
+            document.getElementById("reward-card-container").innerHTML = `
+                <div class="card" style="max-width: 200px; margin: 0 auto; border-color: var(--secondary); background: #e8f8f5;">
+                    <a href="${card.link}" target="_blank" class="info-btn" title="Mehr Infos">ℹ️</a>
+                    <img src="${card.img}" alt="${card.name}">
+                    <h4>${card.name}</h4>
+                </div>`;
+                
+        } else if (urlRoom) {
+            // Spieler hat Team-Beitritts QR-Code gescannt
             document.getElementById("join-pin").value = urlRoom;
             joinTeam();
         } else {
+            // Standard Startbildschirm
+            document.getElementById("deck-count").innerText = myDeck.length;
             document.getElementById("view-start").style.display = "block";
         }
 
@@ -139,7 +171,6 @@
 
             addCardsToPool(myDeck);
 
-            // Auf neue Mitglieder warten
             db.ref('rooms/' + currentRoom).on('child_added', (snapshot) => {
                 let memberCards = snapshot.val();
                 addCardsToPool(memberCards);
@@ -171,7 +202,6 @@
         function addCardsToPool(cardsArray) {
             let grid = document.getElementById("pool-grid");
             cardsArray.forEach(cardKey => {
-                // Prüfen ob die Karte schon im Pool liegt
                 if(teamPoolSet.has(cardKey)) return;
                 
                 teamPoolSet.add(cardKey);
@@ -179,13 +209,12 @@
                 let div = document.createElement("div");
                 div.className = "card";
                 
-                // HTML für die Karte inkl Info-Button
                 div.innerHTML = `<a href="${card.link}" target="_blank" class="info-btn" title="Mehr Infos" onclick="event.stopPropagation()">ℹ️</a>
                                  <img src="${card.img}" alt="${card.name}">
                                  <h4>${card.name}</h4>`;
                 
                 div.onclick = () => {
-                    if(hasSubmitted) return; // Nach Abgabe keine Änderungen mehr erlaubt
+                    if(hasSubmitted) return; 
                     
                     if (div.classList.contains("selected")) {
                         div.classList.remove("selected");
@@ -227,4 +256,3 @@
     </script>
 </body>
 </html>
-
