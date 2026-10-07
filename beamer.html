@@ -6,24 +6,25 @@
     <title>Beamer - Informatics TCG</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- QR Code Generator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --primary: #2c3e50; --secondary: #18bc9c; --bg: #ecf0f1; --text: #333; }
         body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 40px; margin: 0; }
         
-        /* Timer UI links oben */
-        .timer-box { position: absolute; top: 20px; left: 20px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; border: 2px solid var(--primary); }
+        .header { display: flex; align-items: center; justify-content: center; gap: 60px; margin-bottom: 40px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header-text { text-align: center; }
+        .header-text h1 { margin-top: 0; margin-bottom: 5px; color: var(--primary); }
+        #main-qrcode { background: white; padding: 10px; }
+
+        /* Timer UI */
+        .timer-box { background: #f8f9fa; padding: 15px 25px; border-radius: 10px; text-align: center; border: 2px solid var(--primary); }
         .timer-display { font-size: 2.5em; font-weight: bold; color: var(--primary); font-family: monospace; margin-bottom: 5px; }
         .timer-controls button { background: var(--primary); color: white; border: none; padding: 5px 10px; margin: 2px; border-radius: 3px; cursor: pointer; font-weight: bold; }
         .timer-controls button:hover { background: #1a252f; }
         .btn-start { background: var(--secondary) !important; }
         .btn-start:hover { background: #128f76 !important; }
         .btn-start:disabled { background: #95a5a6 !important; cursor: not-allowed; }
-
-        .header { display: flex; align-items: center; justify-content: center; gap: 30px; margin-bottom: 40px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 20px; }
-        .header-text { text-align: left; }
-        .header-text h1 { margin-top: 0; color: var(--primary); }
-        #main-qrcode { background: white; padding: 10px; }
 
         .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
         
@@ -45,21 +46,22 @@
 </head>
 <body>
 
-    <!-- Countdown Timer -->
-    <div class="timer-box" id="timer-box">
-        <div class="timer-display" id="time-display">15:00</div>
-        <div class="timer-controls">
-            <button onclick="adjustTimer(-1)">-1m</button>
-            <button class="btn-start" onclick="startTimer()" id="start-timer-btn">Start</button>
-            <button onclick="adjustTimer(1)">+1m</button>
-        </div>
-    </div>
-
     <div class="header">
+        <!-- Countdown Timer -->
+        <div class="timer-box" id="timer-box">
+            <div class="timer-display" id="time-display">15:00</div>
+            <div class="timer-controls">
+                <button onclick="adjustTimer(-1)">-1m</button>
+                <button class="btn-start" onclick="startTimer()" id="start-timer-btn">Start</button>
+                <button onclick="adjustTimer(1)">+1m</button>
+            </div>
+        </div>
+
         <div class="header-text">
             <h1>Informatics TCG</h1>
             <p>Scanne den Code oder gehe auf<br><b>floxe.github.io/Informatik-TCG/student.html</b><br>um ein Team zu gründen!</p>
         </div>
+        
         <div id="main-qrcode"></div>
     </div>
 
@@ -149,7 +151,7 @@
                 clearInterval(timerInterval);
                 timerInterval = null;
             }
-            document.getElementById("timer-box").style.display = "none";
+            document.getElementById("start-timer-btn").innerText = "Beendet";
             document.getElementById("problem-view").style.display = "none";
             document.getElementById("reward-view").style.display = "block";
             
