@@ -33,9 +33,9 @@
 
     <div class="container">
         
-        <!-- REWARD VIEW (Erscheint, wenn man QR am Ende der Runde scannt) -->
+        <!-- REWARD VIEW -->
         <div id="view-reward">
-            <h2>🎉 Neue Karte freigeschaltet!</h2>
+            <h2>Neue Karte freigeschaltet!</h2>
             <p>Du hast diese Karte für dein persönliches Deck gesammelt:</p>
             <div id="reward-card-container" style="margin-bottom: 20px;"></div>
             <button class="btn" onclick="window.location.href = window.location.pathname;">Weiter zum Hauptmenü</button>
@@ -43,13 +43,20 @@
 
         <!-- START VIEW -->
         <div id="view-start">
-            <h1>Mein Deck</h1>
-            <p>Du hast <span id="deck-count">3</span> Karten in deinem Deck.</p>
-            <input type="text" id="team-name" placeholder="Team-Name (z.B. Turingtester 🤖)">
-            <button class="btn" onclick="createTeam()">Neues Team gründen</button>
-            <hr style="margin: 20px 0;">
-            <input type="text" id="join-pin" placeholder="Team-PIN (z.B. 1234)">
-            <button class="btn" style="background: var(--primary);" onclick="joinTeam()">Team beitreten</button>
+            <h1>Informatics TCG</h1>
+            <p>Du hast <b id="deck-count">3</b> Karten in deinem Deck.</p>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
+                <input type="text" id="team-name" placeholder="Team-Name (z.B. Turingtester)">
+                <button class="btn" onclick="createTeam()">Neues Team gründen</button>
+                <hr style="margin: 15px 0; border: none; border-top: 1px solid #ccc;">
+                <input type="text" id="join-pin" placeholder="Team-PIN (z.B. 1234)">
+                <button class="btn" style="background: var(--primary);" onclick="joinTeam()">Team beitreten</button>
+            </div>
+
+            <!-- Anzeige des persönlichen Decks im Startbildschirm -->
+            <h3>Deine aktuellen Karten:</h3>
+            <div class="cards-grid" id="start-my-cards-grid"></div>
         </div>
 
         <!-- LEADER VIEW -->
@@ -90,8 +97,6 @@
         const db = firebase.database();
 
         const attributes = ["Theorie", "Software", "Hardware", "Design", "Vision"];
-        
-        // NEU: Grace Hopper hinzugefügt
         const allCards = {
             turing: { name: "Alan Turing", img: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Alan_Turing_Aged_16.jpg", link: "https://de.wikipedia.org/wiki/Alan_Turing", stats: { Theorie: 5, Software: 4, Hardware: 3, Design: 1, Vision: 5 } },
             allen: { name: "Frances E. Allen", img: "https://upload.wikimedia.org/wikipedia/commons/1/15/Allen_mg_2528-3750K-b.jpg", link: "https://de.wikipedia.org/wiki/Frances_E._Allen", stats: { Theorie: 3, Software: 5, Hardware: 3, Design: 1, Vision: 4 } },
@@ -107,7 +112,6 @@
         if (savedDeck) {
             myDeck = JSON.parse(savedDeck);
         } else {
-            // Nur die Startkarten (ohne die neue Reward-Karte) mischen
             let startKeys = ["turing", "allen", "clarke", "ellis", "kare"];
             for (let i = startKeys.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -126,18 +130,16 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const urlRoom = urlParams.get('room');
-        const urlNewCard = urlParams.get('newcard'); // NEU: Check auf Reward-Karte
+        const urlNewCard = urlParams.get('newcard'); 
         
         // VIEW-ROUTING
         if (urlNewCard && allCards[urlNewCard]) {
-            // Spieler hat Reward QR-Code gescannt
             if (!myDeck.includes(urlNewCard)) {
-                myDeck.push(urlNewCard); // Karte ins Deck
+                myDeck.push(urlNewCard);
                 localStorage.setItem("myInformaticsTCGDeck", JSON.stringify(myDeck));
             }
             
             document.getElementById("view-reward").style.display = "block";
-            
             let card = allCards[urlNewCard];
             document.getElementById("reward-card-container").innerHTML = `
                 <div class="card" style="max-width: 200px; margin: 0 auto; border-color: var(--secondary); background: #e8f8f5;">
@@ -147,13 +149,23 @@
                 </div>`;
                 
         } else if (urlRoom) {
-            // Spieler hat Team-Beitritts QR-Code gescannt
             document.getElementById("join-pin").value = urlRoom;
             joinTeam();
         } else {
-            // Standard Startbildschirm
+            // Start Screen Aufbauen
             document.getElementById("deck-count").innerText = myDeck.length;
             document.getElementById("view-start").style.display = "block";
+            
+            // Render eigene Karten im Startbildschirm
+            let startGrid = document.getElementById("start-my-cards-grid");
+            myDeck.forEach(c => {
+                let card = allCards[c];
+                startGrid.innerHTML += `<div class="card" style="cursor: default;">
+                                          <a href="${card.link}" target="_blank" class="info-btn" title="Mehr Infos">ℹ️</a>
+                                          <img src="${card.img}" alt="${card.name}">
+                                          <h4>${card.name}</h4>
+                                       </div>`;
+            });
         }
 
         function createTeam() {
