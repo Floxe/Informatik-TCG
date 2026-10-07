@@ -6,40 +6,51 @@
     <title>Beamer - Informatics TCG</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <!-- QR Code Generator für den Beamer -->
+    <!-- QR Code Generator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --primary: #2c3e50; --bg: #ecf0f1; --text: #333; }
+        :root { --primary: #2c3e50; --secondary: #18bc9c; --bg: #ecf0f1; --text: #333; }
         body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 40px; }
-        .header { text-align: center; margin-bottom: 40px; }
         
-        #main-qrcode { display: flex; justify-content: center; margin-top: 15px; margin-bottom: 15px; }
+        /* Neues Layout für den Header (QR Code neben dem Text) */
+        .header { display: flex; align-items: center; justify-content: center; gap: 30px; margin-bottom: 40px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header-text { text-align: left; }
+        .header-text h1 { margin-top: 0; color: var(--primary); }
+        #main-qrcode { background: white; padding: 10px; }
 
         .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-        .problem-box { background: var(--primary); color: white; padding: 30px; border-radius: 10px; font-size: 1.5em; text-align: center; height: fit-content; }
-        .leaderboard { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
+        .problem-box { background: var(--primary); color: white; padding: 30px; border-radius: 10px; font-size: 1.5em; text-align: center; height: fit-content; position: relative; }
+        .reward-box { background: var(--secondary); color: white; padding: 30px; border-radius: 10px; font-size: 1.5em; text-align: center; height: fit-content; display: none; }
+        
+        .leaderboard { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .leaderboard-item { border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
         .leaderboard-item:hover { background-color: #f1f2f6; }
         .leaderboard-row { display: flex; justify-content: space-between; padding: 15px; font-size: 1.2em; }
         .rank-1 { background-color: #f1c40f !important; font-weight: bold; color: black; }
         
-        /* Versteckte Details für die Karten */
         .leaderboard-details { padding: 15px; background-color: #f8f9fa; font-size: 0.9em; color: #555; border-top: 1px dashed #ccc; }
         .played-card { display: inline-block; background: #e0e6ed; color: #2c3e50; padding: 5px 10px; margin: 5px; border-radius: 5px; font-weight: bold; }
+        
+        .btn-end { background-color: #e74c3c; color: white; border: none; padding: 15px 20px; font-size: 0.7em; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 20px; width: 100%; transition: 0.3s; }
+        .btn-end:hover { background-color: #c0392b; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>Informatics TCG</h1>
-        <p>Scanne den Code oder gehe auf <b>floxe.github.io/Informatik-TCG/student.html</b> um ein Team zu gründen!</p>
+        <div class="header-text">
+            <h1>Informatics TCG</h1>
+            <p>Scanne den Code oder gehe auf<br><b>floxe.github.io/Informatik-TCG/student.html</b><br>um ein Team zu gründen!</p>
+        </div>
         <div id="main-qrcode"></div>
     </div>
 
     <div class="layout">
+        <!-- Spalte 1: Problem ODER Belohnung -->
         <div>
-            <div class="problem-box">
+            <!-- Problem Ansicht -->
+            <div class="problem-box" id="problem-view">
                 <h2>Meilenstein: Der Personal Computer</h2>
                 <p>Baut eine intuitive Maschine für den Endnutzer.</p>
                 <hr>
@@ -49,9 +60,21 @@
                 <p style="font-size: 0.8em; margin-top: 20px;"><b>Jede</b> Karte besitzt <b>jedes</b> Attribut mit Werten <b>1-5</b></p>
                 <p style="font-size: 0.8em; margin-top: 20px;">Benötigte Expertise soll <b>möglichst genau</b> erreicht werden.</p>
                 <p style="font-size: 0.8em; margin-top: 20px;">Zu viel / zu wenig gibt Punkteverlust!</p>
+                
+                <button class="btn-end" onclick="endRound()">🛑 RUNDE BEENDEN & BELOHNUNG ZEIGEN</button>
+            </div>
+
+            <!-- Belohnungs Ansicht (Erscheint nach Klick) -->
+            <div class="reward-box" id="reward-view">
+                <h2>Runde beendet!</h2>
+                <p>Das Leaderboard steht fest.</p>
+                <p style="font-size: 0.8em;">Scanne diesen Code, um deine neue Karte für dein Deck freizuschalten:</p>
+                <div id="reward-qrcode" style="display: flex; justify-content: center; margin: 20px 0; background: white; padding: 15px; border-radius: 10px; width: fit-content; margin-left: auto; margin-right: auto;"></div>
+                <h3>Belohnung: Grace Hopper</h3>
             </div>
         </div>
 
+        <!-- Spalte 2: Leaderboard -->
         <div class="leaderboard" id="leaderboard">
             <h2 style="text-align: center;">Live Leaderboard</h2>
             <p style="text-align: center; font-size: 0.8em; margin-top: -10px; color: #7f8c8d;">(Klicke auf ein Team, um die gespielten Karten zu sehen)</p>
@@ -66,10 +89,23 @@
         window.onload = () => {
             new QRCode(document.getElementById("main-qrcode"), {
                 text: "https://floxe.github.io/Informatik-TCG/student.html",
-                width: 150,
-                height: 150
+                width: 120,
+                height: 120
             });
         };
+
+        // Runde beenden und Belohnungs-QR-Code generieren
+        function endRound() {
+            document.getElementById("problem-view").style.display = "none";
+            document.getElementById("reward-view").style.display = "block";
+            
+            // Generiere QR Code mit ?newcard=hopper
+            new QRCode(document.getElementById("reward-qrcode"), {
+                text: "https://floxe.github.io/Informatik-TCG/student.html?newcard=hopper",
+                width: 250,
+                height: 250
+            });
+        }
 
         const firebaseConfig = {
             apiKey: "AIzaSyCyHK3ffOccGryw03jQphYXMpP3tC6Xgpk",
@@ -88,18 +124,18 @@
         const targetStats = { Theorie: 12, Software: 15, Hardware: 18, Design: 22, Vision: 15 };
         const attributes = ["Theorie", "Software", "Hardware", "Design", "Vision"];
         
-        // Wörterbuch für die Beamer-Anzeige der Kartennamen
+        // Wörterbuch für die Beamer-Anzeige der Kartennamen (jetzt mit Grace Hopper)
         const allCards = {
             turing: { name: "Alan Turing" },
             allen: { name: "Frances E. Allen" },
             clarke: { name: "Edith Clarke" },
             ellis: { name: "Clarence Ellis" },
-            kare: { name: "Susan Kare" }
+            kare: { name: "Susan Kare" },
+            hopper: { name: "Grace Hopper" } // Die neue Karte!
         };
 
         let submissions = [];
 
-        // Funktion zum Ein-/Ausklappen der Karten-Details
         function toggleDetails(index) {
             let el = document.getElementById("details-" + index);
             if (el.style.display === "none") {
@@ -115,7 +151,6 @@
             submissions.forEach((sub, index) => {
                 let rankClass = index === 0 ? "rank-1" : "";
                 
-                // HTML für die gespielten Karten generieren
                 let cardsHtml = "";
                 if (sub.playedCards && sub.playedCards.length > 0) {
                     sub.playedCards.forEach(cardKey => {
@@ -150,7 +185,6 @@
 
             let tName = data.teamName ? data.teamName : "Team " + data.teamPin;
 
-            // Neuer Parameter "playedCards" wird ins Array übernommen
             submissions.push({ 
                 teamPin: data.teamPin, 
                 teamName: tName, 
@@ -163,4 +197,3 @@
     </script>
 </body>
 </html>
-
