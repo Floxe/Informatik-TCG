@@ -6,14 +6,21 @@
     <title>Beamer - Informatics TCG</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <!-- QR Code Generator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --primary: #2c3e50; --secondary: #18bc9c; --bg: #ecf0f1; --text: #333; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 40px; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 40px; margin: 0; }
         
-        /* Neues Layout für den Header (QR Code neben dem Text) */
-        .header { display: flex; align-items: center; justify-content: center; gap: 30px; margin-bottom: 40px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        /* Timer UI links oben */
+        .timer-box { position: absolute; top: 20px; left: 20px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; border: 2px solid var(--primary); }
+        .timer-display { font-size: 2.5em; font-weight: bold; color: var(--primary); font-family: monospace; margin-bottom: 5px; }
+        .timer-controls button { background: var(--primary); color: white; border: none; padding: 5px 10px; margin: 2px; border-radius: 3px; cursor: pointer; font-weight: bold; }
+        .timer-controls button:hover { background: #1a252f; }
+        .btn-start { background: var(--secondary) !important; }
+        .btn-start:hover { background: #128f76 !important; }
+        .btn-start:disabled { background: #95a5a6 !important; cursor: not-allowed; }
+
+        .header { display: flex; align-items: center; justify-content: center; gap: 30px; margin-bottom: 40px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 20px; }
         .header-text { text-align: left; }
         .header-text h1 { margin-top: 0; color: var(--primary); }
         #main-qrcode { background: white; padding: 10px; }
@@ -38,6 +45,16 @@
 </head>
 <body>
 
+    <!-- Countdown Timer -->
+    <div class="timer-box" id="timer-box">
+        <div class="timer-display" id="time-display">15:00</div>
+        <div class="timer-controls">
+            <button onclick="adjustTimer(-1)">-1m</button>
+            <button class="btn-start" onclick="startTimer()" id="start-timer-btn">Start</button>
+            <button onclick="adjustTimer(1)">+1m</button>
+        </div>
+    </div>
+
     <div class="header">
         <div class="header-text">
             <h1>Informatics TCG</h1>
@@ -47,7 +64,6 @@
     </div>
 
     <div class="layout">
-        <!-- Spalte 1: Problem ODER Belohnung -->
         <div>
             <!-- Problem Ansicht -->
             <div class="problem-box" id="problem-view">
@@ -61,10 +77,10 @@
                 <p style="font-size: 0.8em; margin-top: 20px;">Benötigte Expertise soll <b>möglichst genau</b> erreicht werden.</p>
                 <p style="font-size: 0.8em; margin-top: 20px;">Zu viel / zu wenig gibt Punkteverlust!</p>
                 
-                <button class="btn-end" onclick="endRound()">🛑 RUNDE BEENDEN & BELOHNUNG ZEIGEN</button>
+                <button class="btn-end" onclick="endRound()">RUNDE BEENDEN</button>
             </div>
 
-            <!-- Belohnungs Ansicht (Erscheint nach Klick) -->
+            <!-- Belohnungs Ansicht -->
             <div class="reward-box" id="reward-view">
                 <h2>Runde beendet!</h2>
                 <p>Das Leaderboard steht fest.</p>
@@ -74,7 +90,7 @@
             </div>
         </div>
 
-        <!-- Spalte 2: Leaderboard -->
+        <!-- Leaderboard -->
         <div class="leaderboard" id="leaderboard">
             <h2 style="text-align: center;">Live Leaderboard</h2>
             <p style="text-align: center; font-size: 0.8em; margin-top: -10px; color: #7f8c8d;">(Klicke auf ein Team, um die gespielten Karten zu sehen)</p>
@@ -85,6 +101,39 @@
     </div>
 
     <script>
+        // --- Timer Logik ---
+        let timerSeconds = 15 * 60;
+        let timerInterval = null;
+
+        function updateTimerDisplay() {
+            let m = Math.floor(timerSeconds / 60);
+            let s = timerSeconds % 60;
+            document.getElementById("time-display").innerText = 
+                (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+        }
+
+        function adjustTimer(mins) {
+            if (timerInterval) return; // Sperren, wenn Timer läuft
+            timerSeconds += mins * 60;
+            if (timerSeconds < 0) timerSeconds = 0;
+            updateTimerDisplay();
+        }
+
+        function startTimer() {
+            if (timerInterval || timerSeconds <= 0) return; 
+            document.getElementById("start-timer-btn").disabled = true;
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                updateTimerDisplay();
+                if (timerSeconds <= 0) {
+                    endRound(); // Auto-Ende bei 00:00
+                }
+            }, 1000);
+        }
+        
+        updateTimerDisplay(); // Initiale Anzeige setzen
+        // --------------------
+
         // Haupt-URL als QR Code generieren
         window.onload = () => {
             new QRCode(document.getElementById("main-qrcode"), {
@@ -94,12 +143,17 @@
             });
         };
 
-        // Runde beenden und Belohnungs-QR-Code generieren
+        // Runde beenden
         function endRound() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            document.getElementById("timer-box").style.display = "none";
             document.getElementById("problem-view").style.display = "none";
             document.getElementById("reward-view").style.display = "block";
             
-            // Generiere QR Code mit ?newcard=hopper
+            document.getElementById("reward-qrcode").innerHTML = ""; // Clear fallback
             new QRCode(document.getElementById("reward-qrcode"), {
                 text: "https://floxe.github.io/Informatik-TCG/student.html?newcard=hopper",
                 width: 250,
@@ -107,6 +161,7 @@
             });
         }
 
+        // --- Firebase & Leaderboard Logik ---
         const firebaseConfig = {
             apiKey: "AIzaSyCyHK3ffOccGryw03jQphYXMpP3tC6Xgpk",
             authDomain: "informatik-tcg.firebaseapp.com",
@@ -124,25 +179,20 @@
         const targetStats = { Theorie: 12, Software: 15, Hardware: 18, Design: 22, Vision: 15 };
         const attributes = ["Theorie", "Software", "Hardware", "Design", "Vision"];
         
-        // Wörterbuch für die Beamer-Anzeige der Kartennamen (jetzt mit Grace Hopper)
         const allCards = {
             turing: { name: "Alan Turing" },
             allen: { name: "Frances E. Allen" },
             clarke: { name: "Edith Clarke" },
             ellis: { name: "Clarence Ellis" },
             kare: { name: "Susan Kare" },
-            hopper: { name: "Grace Hopper" } // Die neue Karte!
+            hopper: { name: "Grace Hopper" }
         };
 
         let submissions = [];
 
         function toggleDetails(index) {
             let el = document.getElementById("details-" + index);
-            if (el.style.display === "none") {
-                el.style.display = "block";
-            } else {
-                el.style.display = "none";
-            }
+            el.style.display = (el.style.display === "none") ? "block" : "none";
         }
 
         function renderLeaderboard() {
@@ -150,7 +200,6 @@
             let html = "";
             submissions.forEach((sub, index) => {
                 let rankClass = index === 0 ? "rank-1" : "";
-                
                 let cardsHtml = "";
                 if (sub.playedCards && sub.playedCards.length > 0) {
                     sub.playedCards.forEach(cardKey => {
