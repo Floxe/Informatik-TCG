@@ -55,16 +55,17 @@
                 <input type="text" id="team-name" maxlength="25" placeholder="Team-Name (max 25 Zeichen)">
                 <button class="btn" onclick="createTeam()">Neues Team gründen</button>
                 <hr style="margin: 15px 0; border: none; border-top: 1px solid #ccc;">
-                <!-- Typ Tel erzwingt Zahlentastatur am Handy -->
                 <input type="tel" id="join-pin" maxlength="4" placeholder="Team-PIN (4 Zahlen)">
                 <button class="btn" style="background: var(--primary);" onclick="joinTeam()">Team beitreten</button>
+                <!-- Hier tauchen PIN/Beitritts Fehler auf -->
+                <div id="join-error" class="error-toast" style="margin-top: 10px;"></div>
             </div>
 
             <h3>Deine aktuellen Karten:</h3>
             <div class="cards-grid" id="start-my-cards-grid"></div>
         </div>
 
-        <!-- GEMEINSAME RAUM ANSICHT (Leader & Members) -->
+        <!-- GEMEINSAME RAUM ANSICHT -->
         <div id="view-room">
             <h2>Team: <span id="team-name-display"></span></h2>
             <p>PIN: <b id="team-pin-display" style="font-size: 1.5em; color: var(--primary);"></b></p>
@@ -84,7 +85,7 @@
             <h3>Karten-Pool des gesamten Teams:</h3>
             <div class="cards-grid" id="pool-grid"></div>
             
-            <!-- Fehleranzeige, falls ein Mitglied klicken will -->
+            <!-- Fehleranzeige, falls Limit erreicht oder Mitglied klickt -->
             <div id="interaction-error" class="error-toast"></div>
 
             <button class="btn" id="submit-btn" onclick="submitSolution()" disabled>Lösung an Beamer senden</button>
@@ -180,27 +181,27 @@
             teamName = document.getElementById("team-name").value.trim() || "Anonymes Team";
             currentRoom = Math.floor(1000 + Math.random() * 9000).toString(); 
             
-            // Speichere den Teamnamen direkt in Firebase
             db.ref('rooms/' + currentRoom + '/info').set({ name: teamName });
-            
             setupRoomUI(true);
         }
 
         function joinTeam() {
-            // Validierung: Nur Zahlen zulassen und Länge prüfen
+            let errorBox = document.getElementById("join-error");
+            errorBox.innerText = ""; // Alten Fehler löschen
+            
             let pinInput = document.getElementById("join-pin").value.replace(/\D/g, '');
             if (pinInput.length !== 4) {
-                alert("Die PIN muss aus genau 4 Zahlen bestehen.");
+                errorBox.innerText = "Die PIN muss aus genau 4 Zahlen bestehen.";
                 return;
             }
 
-            // Prüfen ob der Raum in Firebase existiert
+            // Validierung im Backend
             db.ref('rooms/' + pinInput).once('value').then((snapshot) => {
                 if (snapshot.exists()) {
                     currentRoom = pinInput;
                     setupRoomUI(false);
                 } else {
-                    alert("Dieses Team existiert nicht! Bitte überprüfe die PIN.");
+                    errorBox.innerText = "Dieses Team existiert nicht! Bitte überprüfe die PIN.";
                 }
             });
         }
@@ -211,29 +212,25 @@
             document.getElementById("view-room").style.display = "block";
             document.getElementById("team-pin-display").innerText = currentRoom;
 
-            // Rolle UI anpassen
             let roleBanner = document.getElementById("role-banner");
             if (isLeader) {
                 document.getElementById("team-name-display").innerText = teamName;
-                roleBanner.innerHTML = "<b>Du bist Teamleader!</b> Wähle bis zu 5 Karten aus dem Pool aus.";
+                roleBanner.innerHTML = "👑 <b>Du bist Teamleader!</b> Wähle bis zu 5 Karten aus dem Pool aus.";
                 roleBanner.className = "role-banner role-leader";
                 document.getElementById("submit-btn").style.display = "block";
             } else {
-                roleBanner.innerHTML = "<b>Du bist Teammitglied.</b> Besprecht euch! Nur der Leader kann Karten auswählen.";
+                roleBanner.innerHTML = "👤 <b>Du bist Teammitglied.</b> Besprecht euch! Nur der Leader kann Karten auswählen.";
                 roleBanner.className = "role-banner role-member";
                 document.getElementById("submit-btn").style.display = "none";
                 
-                // Teamnamen aus Firebase abrufen
                 db.ref('rooms/' + currentRoom + '/info/name').once('value').then(snap => {
                     if(snap.exists()) document.getElementById("team-name-display").innerText = snap.val();
                 });
             }
 
-            // QR Code generieren (Für alle sichtbar, damit jeder einladen kann)
             let joinUrl = window.location.href.split('?')[0] + "?room=" + currentRoom;
             new QRCode(document.getElementById("qrcode"), { text: joinUrl, width: 128, height: 128 });
 
-            // Eigene Karten in der Raum-Ansicht darstellen (nur visuell, nicht anklickbar)
             let myRoomGrid = document.getElementById("my-room-cards-grid");
             myDeck.forEach(c => {
                 let card = allCards[c];
@@ -244,11 +241,9 @@
                                        </div>`;
             });
 
-            // Eigene Karten ins Backend pushen (unter 'members')
             let myId = Math.random().toString(36).substring(7);
             db.ref('rooms/' + currentRoom + '/members/' + myId).set(myDeck);
 
-            // Den Live-Pool aller Mitglieder abonnieren
             db.ref('rooms/' + currentRoom + '/members').on('child_added', (snapshot) => {
                 let memberCards = snapshot.val();
                 addCardsToPool(memberCards);
@@ -270,9 +265,10 @@
                                  <h4>${card.name}</h4>`;
                 
                 div.onclick = () => {
+                    let errBox = document.getElementById("interaction-error");
+                    errBox.innerText = ""; // Vorherige Meldung bereinigen
+                    
                     if (!isLeader) {
-                        // Fehlermeldung für Mitglieder
-                        let errBox = document.getElementById("interaction-error");
                         errBox.innerText = "Nur der Teamleader darf Karten auswählen!";
                         setTimeout(() => { errBox.innerText = ""; }, 3000);
                         return;
@@ -288,7 +284,8 @@
                             div.classList.add("selected");
                             selectedCards.push(cardKey);
                         } else {
-                            alert("Maximal 5 Karten pro Team-Lösung!");
+                            errBox.innerText = "Maximal 5 Karten pro Team-Lösung!";
+                            setTimeout(() => { errBox.innerText = ""; }, 3000);
                         }
                     }
                     document.getElementById("submit-btn").disabled = selectedCards.length === 0;
