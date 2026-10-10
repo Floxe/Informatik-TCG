@@ -6,18 +6,18 @@
     <title>Beamer - Informatics TCG</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <!-- QR Code Generator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --primary: #2c3e50; --secondary: #18bc9c; --bg: #ecf0f1; --text: #333; }
         body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 40px; margin: 0; }
         
-        .header { display: flex; align-items: center; justify-content: center; gap: 60px; margin-bottom: 40px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        /* Neues, zentriertes Header-Layout */
+        .header { display: flex; align-items: center; justify-content: center; gap: 40px; margin-bottom: 40px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .header-text { text-align: center; }
         .header-text h1 { margin-top: 0; margin-bottom: 5px; color: var(--primary); }
-        #main-qrcode { background: white; padding: 10px; }
+        #main-qrcode { background: white; padding: 10px; border: 2px solid #eee; border-radius: 10px; }
 
-        /* Timer UI */
+        /* Timer UI sauber in den Header integriert */
         .timer-box { background: #f8f9fa; padding: 15px 25px; border-radius: 10px; text-align: center; border: 2px solid var(--primary); }
         .timer-display { font-size: 2.5em; font-weight: bold; color: var(--primary); font-family: monospace; margin-bottom: 5px; }
         .timer-controls button { background: var(--primary); color: white; border: none; padding: 5px 10px; margin: 2px; border-radius: 3px; cursor: pointer; font-weight: bold; }
@@ -62,6 +62,7 @@
             <p>Scanne den Code oder gehe auf<br><b>floxe.github.io/Informatik-TCG/student.html</b><br>um ein Team zu gründen!</p>
         </div>
         
+        <!-- QR Code Anzeige -->
         <div id="main-qrcode"></div>
     </div>
 
@@ -79,7 +80,7 @@
                 <p style="font-size: 0.8em; margin-top: 20px;">Benötigte Expertise soll <b>möglichst genau</b> erreicht werden.</p>
                 <p style="font-size: 0.8em; margin-top: 20px;">Zu viel / zu wenig gibt Punkteverlust!</p>
                 
-                <button class="btn-end" onclick="endRound()">RUNDE BEENDEN</button>
+                <button class="btn-end" onclick="endRound()">RUNDE BEENDEN & BELOHNUNG ZEIGEN</button>
             </div>
 
             <!-- Belohnungs Ansicht -->
@@ -115,7 +116,7 @@
         }
 
         function adjustTimer(mins) {
-            if (timerInterval) return; // Sperren, wenn Timer läuft
+            if (timerInterval) return; 
             timerSeconds += mins * 60;
             if (timerSeconds < 0) timerSeconds = 0;
             updateTimerDisplay();
@@ -133,8 +134,7 @@
             }, 1000);
         }
         
-        updateTimerDisplay(); // Initiale Anzeige setzen
-        // --------------------
+        updateTimerDisplay();
 
         // Haupt-URL als QR Code generieren
         window.onload = () => {
@@ -155,7 +155,7 @@
             document.getElementById("problem-view").style.display = "none";
             document.getElementById("reward-view").style.display = "block";
             
-            document.getElementById("reward-qrcode").innerHTML = ""; // Clear fallback
+            document.getElementById("reward-qrcode").innerHTML = ""; 
             new QRCode(document.getElementById("reward-qrcode"), {
                 text: "https://floxe.github.io/Informatik-TCG/student.html?newcard=hopper",
                 width: 250,
