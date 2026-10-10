@@ -24,7 +24,7 @@
         .info-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.8); border-radius: 50%; width: 25px; height: 25px; display: flex; justify-content: center; align-items: center; text-decoration: none; font-size: 14px; font-weight: bold; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 10; }
         
         #qrcode { display: flex; justify-content: center; margin: 15px 0; }
-        #view-start, #view-room, #view-reward { display: none; }
+        #view-start, #view-leader, #view-member, #view-reward { display: none; }
         
         .role-banner { padding: 15px; border-radius: 5px; margin-bottom: 20px; font-size: 1.1em; }
         .role-leader { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
@@ -55,43 +55,48 @@
                 <input type="text" id="team-name" maxlength="25" placeholder="Team-Name (max 25 Zeichen)">
                 <button class="btn" onclick="createTeam()">Neues Team gründen</button>
                 <hr style="margin: 15px 0; border: none; border-top: 1px solid #ccc;">
-                <input type="tel" id="join-pin" maxlength="4" placeholder="Team-PIN (4 Zahlen)">
+                <input type="tel" id="join-pin" maxlength="4" placeholder="Team-PIN (genau 4 Zahlen)">
                 <button class="btn" style="background: var(--primary);" onclick="joinTeam()">Team beitreten</button>
-                <!-- Hier tauchen PIN/Beitritts Fehler auf -->
-                <div id="join-error" class="error-toast" style="margin-top: 10px;"></div>
+                <div id="join-error" class="error-toast"></div>
             </div>
 
             <h3>Deine aktuellen Karten:</h3>
             <div class="cards-grid" id="start-my-cards-grid"></div>
         </div>
 
-        <!-- GEMEINSAME RAUM ANSICHT -->
-        <div id="view-room">
-            <h2>Team: <span id="team-name-display"></span></h2>
+        <!-- LEADER VIEW -->
+        <div id="view-leader">
+            <div class="role-banner role-leader">👑 <b>Du bist Teamleader!</b> Wähle bis zu 5 Karten für die Lösung.</div>
+            <h2>Team: <span id="leader-team-name"></span></h2>
             <p>PIN: <b id="team-pin-display" style="font-size: 1.5em; color: var(--primary);"></b></p>
-            
-            <div id="role-banner" class="role-banner"></div>
-            
-            <div id="qrcode-container">
-                <p style="font-size: 0.9em; color: #555;">Lass andere diesen Code scannen, um beizutreten:</p>
-                <div id="qrcode"></div>
-            </div>
+            <p>Lass andere diesen Code scannen, um beizutreten:</p>
+            <div id="qrcode"></div>
             
             <hr style="margin: 25px 0;">
+            <h3>Deine eigenen Karten:</h3>
+            <div class="cards-grid" id="leader-my-cards-grid"></div>
 
-            <h3>Dein Anteil am Deck:</h3>
-            <div class="cards-grid" id="my-room-cards-grid"></div>
-
-            <h3>Karten-Pool des gesamten Teams:</h3>
-            <div class="cards-grid" id="pool-grid"></div>
+            <h3>Team-Karten-Pool:</h3>
+            <div class="cards-grid" id="leader-pool-grid"></div>
             
-            <!-- Fehleranzeige, falls Limit erreicht oder Mitglied klickt -->
-            <div id="interaction-error" class="error-toast"></div>
-
-            <button class="btn" id="submit-btn" onclick="submitSolution()" disabled>Lösung an Beamer senden</button>
-            <div id="success-message" class="success-msg">Eure Lösung wurde eingereicht. Bitte wartet, bis die Runde am Beamer beendet wurde.</div>
+            <div id="leader-error" class="error-toast"></div>
+            <button class="btn" id="submit-btn" onclick="submitSolution()">Lösung an Beamer senden</button>
+            <div id="success-message" class="success-msg">Eure Lösung wurde eingereicht. Bitte wartet auf das Ende der Runde.</div>
         </div>
 
+        <!-- MEMBER VIEW -->
+        <div id="view-member">
+            <div class="role-banner role-member">👤 <b>Du bist Teammitglied.</b> Besprecht euch! Nur der Leader kann einreichen.</div>
+            <h2>Team: <span id="member-team-name"></span></h2>
+            <p>PIN: <b id="member-team-pin" style="font-size: 1.5em; color: var(--primary);"></b></p>
+            
+            <hr style="margin: 25px 0;">
+            <h3>Deine eigenen Karten:</h3>
+            <div class="cards-grid" id="member-my-cards-grid"></div>
+
+            <h3>Karten-Pool des gesamten Teams:</h3>
+            <div class="cards-grid" id="member-pool-grid"></div>
+        </div>
     </div>
 
     <script>
@@ -119,7 +124,6 @@
             hopper: { name: "Grace Hopper", img: "https://upload.wikimedia.org/wikipedia/commons/a/ad/Commodore_Grace_M._Hopper%2C_USN_%28covered%29.jpg", link: "https://de.wikipedia.org/wiki/Grace_Hopper", stats: { Theorie: 4, Software: 5, Hardware: 2, Design: 1, Vision: 5 } }
         };
 
-        // Lokales Deck generieren oder laden
         let myDeck = [];
         const savedDeck = localStorage.getItem("myInformaticsTCGDeck");
 
@@ -137,7 +141,6 @@
 
         let currentRoom = "";
         let teamName = "";
-        let isLeader = false;
         let hasSubmitted = false;
         let teamPoolSet = new Set();
         let selectedCards = []; 
@@ -146,7 +149,6 @@
         const urlRoom = urlParams.get('room');
         const urlNewCard = urlParams.get('newcard'); 
         
-        // VIEW-ROUTING
         if (urlNewCard && allCards[urlNewCard]) {
             if (!myDeck.includes(urlNewCard)) {
                 myDeck.push(urlNewCard);
@@ -167,135 +169,122 @@
             document.getElementById("deck-count").innerText = myDeck.length;
             document.getElementById("view-start").style.display = "block";
             let startGrid = document.getElementById("start-my-cards-grid");
-            myDeck.forEach(c => {
-                let card = allCards[c];
-                startGrid.innerHTML += `<div class="card" style="cursor: default;">
-                                          <a href="${card.link}" target="_blank" class="info-btn" title="Mehr Infos">ℹ️</a>
-                                          <img src="${card.img}" alt="${card.name}">
-                                          <h4>${card.name}</h4>
-                                       </div>`;
-            });
+            myDeck.forEach(c => renderCard(c, startGrid, false));
         }
 
         function createTeam() {
             teamName = document.getElementById("team-name").value.trim() || "Anonymes Team";
             currentRoom = Math.floor(1000 + Math.random() * 9000).toString(); 
             
+            document.getElementById("view-start").style.display = "none";
+            document.getElementById("view-leader").style.display = "block";
+            document.getElementById("team-pin-display").innerText = currentRoom;
+            document.getElementById("leader-team-name").innerText = teamName;
+            document.getElementById("submit-btn").disabled = true;
+
+            let joinUrl = window.location.href.split('?')[0] + "?room=" + currentRoom;
+            new QRCode(document.getElementById("qrcode"), { text: joinUrl, width: 128, height: 128 });
+
+            // Eigene Karten visuell in der Leader-Ansicht rendern
+            let leaderMyGrid = document.getElementById("leader-my-cards-grid");
+            myDeck.forEach(c => renderCard(c, leaderMyGrid, false));
+
+            // Backend: Team Info und eigene Karten (als leader) hochladen
             db.ref('rooms/' + currentRoom + '/info').set({ name: teamName });
-            setupRoomUI(true);
+            db.ref('rooms/' + currentRoom + '/members/leader').set(myDeck);
+
+            // Lauschen auf ALLE Karten im Pool
+            db.ref('rooms/' + currentRoom + '/members').on('child_added', (snapshot) => {
+                let memberCards = snapshot.val();
+                addCardsToPool(memberCards, true); // true = anklickbar, da Leader
+            });
         }
 
         function joinTeam() {
             let errorBox = document.getElementById("join-error");
-            errorBox.innerText = ""; // Alten Fehler löschen
+            errorBox.innerText = ""; 
             
-            let pinInput = document.getElementById("join-pin").value.replace(/\D/g, '');
+            let pinInput = document.getElementById("join-pin").value.replace(/\D/g, ''); // Nur Zahlen
             if (pinInput.length !== 4) {
                 errorBox.innerText = "Die PIN muss aus genau 4 Zahlen bestehen.";
                 return;
             }
 
-            // Validierung im Backend
-            db.ref('rooms/' + pinInput).once('value').then((snapshot) => {
+            // Validierung, ob der Raum existiert
+            db.ref('rooms/' + pinInput + '/info').once('value').then((snapshot) => {
                 if (snapshot.exists()) {
                     currentRoom = pinInput;
-                    setupRoomUI(false);
+                    teamName = snapshot.val().name;
+                    
+                    document.getElementById("view-start").style.display = "none";
+                    document.getElementById("view-member").style.display = "block";
+                    document.getElementById("member-team-pin").innerText = currentRoom;
+                    document.getElementById("member-team-name").innerText = teamName;
+
+                    let memberMyGrid = document.getElementById("member-my-cards-grid");
+                    myDeck.forEach(c => renderCard(c, memberMyGrid, false));
+
+                    let myId = Math.random().toString(36).substring(7);
+                    db.ref('rooms/' + currentRoom + '/members/' + myId).set(myDeck);
+
+                    db.ref('rooms/' + currentRoom + '/members').on('child_added', (snapshot) => {
+                        let memberCards = snapshot.val();
+                        addCardsToPool(memberCards, false); // false = nicht anklickbar, da Member
+                    });
                 } else {
-                    errorBox.innerText = "Dieses Team existiert nicht! Bitte überprüfe die PIN.";
+                    errorBox.innerText = "Dieses Team existiert nicht!";
                 }
             });
         }
 
-        function setupRoomUI(leaderRole) {
-            isLeader = leaderRole;
-            document.getElementById("view-start").style.display = "none";
-            document.getElementById("view-room").style.display = "block";
-            document.getElementById("team-pin-display").innerText = currentRoom;
-
-            let roleBanner = document.getElementById("role-banner");
-            if (isLeader) {
-                document.getElementById("team-name-display").innerText = teamName;
-                roleBanner.innerHTML = "👑 <b>Du bist Teamleader!</b> Wähle bis zu 5 Karten aus dem Pool aus.";
-                roleBanner.className = "role-banner role-leader";
-                document.getElementById("submit-btn").style.display = "block";
-            } else {
-                roleBanner.innerHTML = "👤 <b>Du bist Teammitglied.</b> Besprecht euch! Nur der Leader kann Karten auswählen.";
-                roleBanner.className = "role-banner role-member";
-                document.getElementById("submit-btn").style.display = "none";
-                
-                db.ref('rooms/' + currentRoom + '/info/name').once('value').then(snap => {
-                    if(snap.exists()) document.getElementById("team-name-display").innerText = snap.val();
-                });
-            }
-
-            let joinUrl = window.location.href.split('?')[0] + "?room=" + currentRoom;
-            new QRCode(document.getElementById("qrcode"), { text: joinUrl, width: 128, height: 128 });
-
-            let myRoomGrid = document.getElementById("my-room-cards-grid");
-            myDeck.forEach(c => {
-                let card = allCards[c];
-                myRoomGrid.innerHTML += `<div class="card" style="cursor: default; opacity: 0.8;">
-                                          <a href="${card.link}" target="_blank" class="info-btn" title="Mehr Infos">ℹ️</a>
-                                          <img src="${card.img}" alt="${card.name}">
-                                          <h4>${card.name}</h4>
-                                       </div>`;
-            });
-
-            let myId = Math.random().toString(36).substring(7);
-            db.ref('rooms/' + currentRoom + '/members/' + myId).set(myDeck);
-
-            db.ref('rooms/' + currentRoom + '/members').on('child_added', (snapshot) => {
-                let memberCards = snapshot.val();
-                addCardsToPool(memberCards);
-            });
+        function renderCard(cardKey, container, isClickable) {
+            let card = allCards[cardKey];
+            let div = document.createElement("div");
+            div.className = "card";
+            if(!isClickable) div.style.cursor = "default";
+            
+            div.innerHTML = `<a href="${card.link}" target="_blank" class="info-btn" title="Mehr Infos" onclick="event.stopPropagation()">ℹ️</a>
+                             <img src="${card.img}" alt="${card.name}">
+                             <h4>${card.name}</h4>`;
+            container.appendChild(div);
+            return div;
         }
 
-        function addCardsToPool(cardsArray) {
-            let grid = document.getElementById("pool-grid");
+        function addCardsToPool(cardsArray, isLeader) {
+            let grid = isLeader ? document.getElementById("leader-pool-grid") : document.getElementById("member-pool-grid");
+            
             cardsArray.forEach(cardKey => {
+                // Keine doppelten Karten anzeigen
                 if(teamPoolSet.has(cardKey)) return;
-                
                 teamPoolSet.add(cardKey);
-                let card = allCards[cardKey];
-                let div = document.createElement("div");
-                div.className = "card";
                 
-                div.innerHTML = `<a href="${card.link}" target="_blank" class="info-btn" title="Mehr Infos" onclick="event.stopPropagation()">ℹ️</a>
-                                 <img src="${card.img}" alt="${card.name}">
-                                 <h4>${card.name}</h4>`;
+                let div = renderCard(cardKey, grid, isLeader);
                 
-                div.onclick = () => {
-                    let errBox = document.getElementById("interaction-error");
-                    errBox.innerText = ""; // Vorherige Meldung bereinigen
-                    
-                    if (!isLeader) {
-                        errBox.innerText = "Nur der Teamleader darf Karten auswählen!";
-                        setTimeout(() => { errBox.innerText = ""; }, 3000);
-                        return;
-                    }
-
-                    if(hasSubmitted) return; 
-                    
-                    if (div.classList.contains("selected")) {
-                        div.classList.remove("selected");
-                        selectedCards.splice(selectedCards.indexOf(cardKey), 1);
-                    } else {
-                        if (selectedCards.length < 5) {
-                            div.classList.add("selected");
-                            selectedCards.push(cardKey);
+                if (isLeader) {
+                    div.onclick = () => {
+                        if(hasSubmitted) return; 
+                        let errBox = document.getElementById("leader-error");
+                        errBox.innerText = "";
+                        
+                        if (div.classList.contains("selected")) {
+                            div.classList.remove("selected");
+                            selectedCards.splice(selectedCards.indexOf(cardKey), 1);
                         } else {
-                            errBox.innerText = "Maximal 5 Karten pro Team-Lösung!";
-                            setTimeout(() => { errBox.innerText = ""; }, 3000);
+                            if (selectedCards.length < 5) {
+                                div.classList.add("selected");
+                                selectedCards.push(cardKey);
+                            } else {
+                                errBox.innerText = "Maximal 5 Karten pro Team!";
+                            }
                         }
-                    }
-                    document.getElementById("submit-btn").disabled = selectedCards.length === 0;
-                };
-                grid.appendChild(div);
+                        document.getElementById("submit-btn").disabled = selectedCards.length === 0;
+                    };
+                }
             });
         }
 
         function submitSolution() {
-            if(hasSubmitted || !isLeader) return;
+            if(hasSubmitted) return;
             hasSubmitted = true;
             
             let teamStats = { Theorie: 0, Software: 0, Hardware: 0, Design: 0, Vision: 0 };
