@@ -9,27 +9,35 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --primary: #2c3e50; --secondary: #18bc9c; --bg: #ecf0f1; --text: #333; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 40px; margin: 0; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); padding: 25px 40px; margin: 0; }
         
-        /* Neues, zentriertes Header-Layout */
-        .header { display: flex; align-items: center; justify-content: center; gap: 40px; margin-bottom: 40px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        /* Admin Login Overlay */
+        #admin-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.96); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .login-box { background: white; padding: 30px; border-radius: 12px; width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .login-box input, .login-box textarea { width: calc(100% - 24px); padding: 12px; margin: 10px 0; font-size: 1em; border: 1px solid #ccc; border-radius: 6px; }
+        .login-box button { background: var(--secondary); color: white; border: none; padding: 12px 20px; font-size: 1.1em; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
+
+        /* Admin Top-Bar */
+        .admin-bar { display: flex; justify-content: space-between; align-items: center; background: #1a252f; color: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95em; }
+        .admin-bar select, .admin-bar button { padding: 8px 12px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; margin-left: 8px; }
+        .btn-activate { background: var(--secondary); color: white; }
+        .btn-toggle-lb { background: #f39c12; color: white; }
+
+        .header { display: flex; align-items: center; justify-content: center; gap: 60px; margin-bottom: 30px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .header-text { text-align: center; }
         .header-text h1 { margin-top: 0; margin-bottom: 5px; color: var(--primary); }
         #main-qrcode { background: white; padding: 10px; border: 2px solid #eee; border-radius: 10px; }
 
-        /* Timer UI sauber in den Header integriert */
         .timer-box { background: #f8f9fa; padding: 15px 25px; border-radius: 10px; text-align: center; border: 2px solid var(--primary); }
         .timer-display { font-size: 2.5em; font-weight: bold; color: var(--primary); font-family: monospace; margin-bottom: 5px; }
         .timer-controls button { background: var(--primary); color: white; border: none; padding: 5px 10px; margin: 2px; border-radius: 3px; cursor: pointer; font-weight: bold; }
-        .timer-controls button:hover { background: #1a252f; }
         .btn-start { background: var(--secondary) !important; }
-        .btn-start:hover { background: #128f76 !important; }
         .btn-start:disabled { background: #95a5a6 !important; cursor: not-allowed; }
 
         .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
         
-        .problem-box { background: var(--primary); color: white; padding: 30px; border-radius: 10px; font-size: 1.5em; text-align: center; height: fit-content; position: relative; }
-        .reward-box { background: var(--secondary); color: white; padding: 30px; border-radius: 10px; font-size: 1.5em; text-align: center; height: fit-content; display: none; }
+        .problem-box { background: var(--primary); color: white; padding: 30px; border-radius: 10px; font-size: 1.4em; text-align: center; height: fit-content; }
+        .reward-box { background: var(--secondary); color: white; padding: 30px; border-radius: 10px; font-size: 1.4em; text-align: center; height: fit-content; display: none; }
         
         .leaderboard { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .leaderboard-item { border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
@@ -40,14 +48,44 @@
         .leaderboard-details { padding: 15px; background-color: #f8f9fa; font-size: 0.9em; color: #555; border-top: 1px dashed #ccc; }
         .played-card { display: inline-block; background: #e0e6ed; color: #2c3e50; padding: 5px 10px; margin: 5px; border-radius: 5px; font-weight: bold; }
         
-        .btn-end { background-color: #e74c3c; color: white; border: none; padding: 15px 20px; font-size: 0.7em; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 20px; width: 100%; transition: 0.3s; }
-        .btn-end:hover { background-color: #c0392b; }
+        .btn-end { background-color: #e74c3c; color: white; border: none; padding: 15px 20px; font-size: 0.7em; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 20px; width: 100%; }
+        .error-msg { color: #e74c3c; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
 
+    <!-- ADMIN LOGIN OVERLAY -->
+    <div id="admin-overlay">
+        <div class="login-box">
+            <h2>🔒 Beamer Admin-Login</h2>
+            <p style="font-size: 0.9em; color: #666;">Gib dein Admin-Passwort ein, um die geheimen Kartenwerte aus Firebase zu entsperren.</p>
+            <input type="password" id="admin-pass" placeholder="Admin-Passwort (z.B. tuwien2026)">
+            <button onclick="loginAdmin()">Entsperren</button>
+            
+            <!-- Erscheint nur beim allerersten Mal, falls der Tresor unter diesem Passwort noch leer ist -->
+            <div id="initial-setup-box" style="display: none; margin-top: 20px; text-align: left;">
+                <hr>
+                <p style="font-size: 0.85em; color: #d35400;"><b>Erstmaliges Setup für dieses Passwort:</b> Füge hier einmalig das geheime Spiel-JSON ein, um es im Firebase-Tresor zu speichern:</p>
+                <textarea id="secret-json-input" rows="6" placeholder='{ "cardStats": {...}, "rounds": {...} }'></textarea>
+                <button onclick="saveInitialSecrets()">Geheime Daten im Tresor speichern</button>
+            </div>
+            <div id="login-error" class="error-msg"></div>
+        </div>
+    </div>
+
+    <!-- ADMIN STEUERLEISTE -->
+    <div class="admin-bar">
+        <div>
+            <span>🛠️ <b>Runden-Steuerung:</b></span>
+            <select id="round-select"></select>
+            <button class="btn-activate" onclick="activateSelectedRound()">Runde im Hörsaal starten</button>
+        </div>
+        <div>
+            <button class="btn-toggle-lb" id="toggle-lb-btn" onclick="toggleLeaderboardMode()">🏆 Zeige: Semester-Leaderboard</button>
+        </div>
+    </div>
+
     <div class="header">
-        <!-- Countdown Timer -->
         <div class="timer-box" id="timer-box">
             <div class="timer-display" id="time-display">15:00</div>
             <div class="timer-controls">
@@ -62,41 +100,33 @@
             <p>Scanne den Code oder gehe auf<br><b>floxe.github.io/Informatik-TCG/student.html</b><br>um ein Team zu gründen!</p>
         </div>
         
-        <!-- QR Code Anzeige -->
         <div id="main-qrcode"></div>
     </div>
 
     <div class="layout">
         <div>
-            <!-- Problem Ansicht -->
             <div class="problem-box" id="problem-view">
-                <h2>Meilenstein: Der Personal Computer</h2>
-                <p>Baut eine intuitive Maschine für den Endnutzer.</p>
+                <h2 id="prob-title">Bitte Runde starten...</h2>
+                <p id="prob-desc"></p>
                 <hr>
-                <p style="font-size: 0.8em; color: #bdc3c7;">Benötigte Expertise:<br>
-                12 Theorie | 15 Software | 18 Hardware | 22 Design | 15 Vision</p>
-                <p style="font-size: 0.8em; margin-top: 20px;">Jedes Team darf bis zu <b>5 Karten</b> kombinieren.</p>
-                <p style="font-size: 0.8em; margin-top: 20px;"><b>Jede</b> Karte besitzt <b>jedes</b> Attribut mit Werten <b>1-5</b></p>
-                <p style="font-size: 0.8em; margin-top: 20px;">Benötigte Expertise soll <b>möglichst genau</b> erreicht werden.</p>
-                <p style="font-size: 0.8em; margin-top: 20px;">Zu viel / zu wenig gibt Punkteverlust!</p>
+                <p style="font-size: 0.85em; color: #bdc3c7;">Benötigte Expertise:<br>
+                <span id="prob-targets"></span></p>
+                <p style="font-size: 0.75em; margin-top: 20px;">Jedes Team darf bis zu <b>5 Karten</b> kombinieren. Zu viel oder zu wenig gibt Fehlerpunkte!</p>
                 
-                <button class="btn-end" onclick="endRound()">RUNDE BEENDEN & BELOHNUNG ZEIGEN</button>
+                <button class="btn-end" onclick="endRound()">🛑 RUNDE BEENDEN & BELOHNUNG ZEIGEN</button>
             </div>
 
-            <!-- Belohnungs Ansicht -->
             <div class="reward-box" id="reward-view">
                 <h2>Runde beendet!</h2>
-                <p>Das Leaderboard steht fest.</p>
-                <p style="font-size: 0.8em;">Scanne diesen Code, um deine neue Karte für dein Deck freizuschalten:</p>
+                <p>Nur Teams, die in dieser Runde eine Lösung eingereicht haben, können diesen Code scannen:</p>
                 <div id="reward-qrcode" style="display: flex; justify-content: center; margin: 20px 0; background: white; padding: 15px; border-radius: 10px; width: fit-content; margin-left: auto; margin-right: auto;"></div>
-                <h3>Belohnung: Grace Hopper</h3>
+                <h3 id="reward-name">Belohnung</h3>
             </div>
         </div>
 
-        <!-- Leaderboard -->
         <div class="leaderboard" id="leaderboard">
-            <h2 style="text-align: center;">Live Leaderboard</h2>
-            <p style="text-align: center; font-size: 0.8em; margin-top: -10px; color: #7f8c8d;">(Klicke auf ein Team, um die gespielten Karten zu sehen)</p>
+            <h2 style="text-align: center;" id="lb-title">Live Runden-Leaderboard</h2>
+            <p style="text-align: center; font-size: 0.8em; margin-top: -10px; color: #7f8c8d;" id="lb-subtitle">(Klicke auf ein Team, um die gespielten Karten zu sehen)</p>
             <div id="lb-content">
                 <p style="text-align: center; color: #7f8c8d;">Warte auf Einreichungen...</p>
             </div>
@@ -104,6 +134,41 @@
     </div>
 
     <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyHK3ffOccGryw03jQphYXMpP3tC6Xgpk",
+            authDomain: "informatik-tcg.firebaseapp.com",
+            projectId: "informatik-tcg",
+            databaseURL: "https://informatik-tcg-default-rtdb.europe-west1.firebasedatabase.app", 
+            storageBucket: "informatik-tcg.firebasestorage.app",
+            messagingSenderId: "212430356994",
+            appId: "1:212430356994:web:9a3947fbe34701bfbcdd1b",
+            measurementId: "G-J8YP14HRVM"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const attributes = ["Theorie", "Software", "Hardware", "Design", "Vision"];
+        const cardNames = {
+            turing: "Alan Turing",
+            allen: "Frances E. Allen",
+            clarke: "Edith Clarke",
+            ellis: "Clarence Ellis",
+            kare: "Susan Kare",
+            hopper: "Grace Hopper"
+        };
+
+        // Geheime Daten (werden erst nach Passwort-Login aus Firebase geladen!)
+        let secretCardStats = {};
+        let roundsData = {};
+        let currentRoundId = "round1";
+        let adminPass = "";
+
+        let submissions = [];
+        let semesterScores = {};
+        let showSemesterLb = false;
+        let roundListenerRef = null;
+
         // --- Timer Logik ---
         let timerSeconds = 15 * 60;
         let timerInterval = null;
@@ -128,16 +193,12 @@
             timerInterval = setInterval(() => {
                 timerSeconds--;
                 updateTimerDisplay();
-                if (timerSeconds <= 0) {
-                    endRound(); // Auto-Ende bei 00:00
-                }
+                if (timerSeconds <= 0) endRound();
             }, 1000);
         }
-        
-        updateTimerDisplay();
 
-        // Haupt-URL als QR Code generieren
         window.onload = () => {
+            updateTimerDisplay();
             new QRCode(document.getElementById("main-qrcode"), {
                 text: "https://floxe.github.io/Informatik-TCG/student.html",
                 width: 120,
@@ -145,7 +206,134 @@
             });
         };
 
-        // Runde beenden
+        // --- Admin Login & Tresor-Abfrage ---
+        function loginAdmin() {
+            adminPass = document.getElementById("admin-pass").value.trim();
+            let errEl = document.getElementById("login-error");
+            errEl.innerText = "";
+            if (!adminPass) return;
+
+            db.ref('admin_secrets/' + adminPass).once('value').then(snap => {
+                if (snap.exists()) {
+                    let data = snap.val();
+                    secretCardStats = data.cardStats;
+                    roundsData = data.rounds;
+                    unlockBeamer();
+                } else {
+                    document.getElementById("initial-setup-box").style.display = "block";
+                    errEl.innerText = "Unter diesem Passwort liegen noch keine Daten. Falls du ein neues Passwort einrichtest, füge unten das JSON ein.";
+                }
+            }).catch(err => {
+                errEl.innerText = "Zugriff verweigert (Prüfe die Firebase-Regeln!).";
+            });
+        }
+
+        function saveInitialSecrets() {
+            let raw = document.getElementById("secret-json-input").value;
+            try {
+                let parsed = JSON.parse(raw);
+                if (!parsed.cardStats || !parsed.rounds) throw new Error("Format ungültig");
+                db.ref('admin_secrets/' + adminPass).set(parsed).then(() => {
+                    secretCardStats = parsed.cardStats;
+                    roundsData = parsed.rounds;
+                    unlockBeamer();
+                });
+            } catch (e) {
+                document.getElementById("login-error").innerText = "Ungültiges JSON-Format!";
+            }
+        }
+
+        function unlockBeamer() {
+            document.getElementById("admin-overlay").style.display = "none";
+            let select = document.getElementById("round-select");
+            select.innerHTML = "";
+            for (let rKey in roundsData) {
+                let opt = document.createElement("option");
+                opt.value = rKey;
+                opt.innerText = roundsData[rKey].title;
+                select.appendChild(opt);
+            }
+
+            // Semester-Scores abonnieren
+            db.ref('semesterScores').on('value', snap => {
+                semesterScores = snap.val() || {};
+                if (showSemesterLb) renderLeaderboard();
+            });
+
+            activateSelectedRound();
+        }
+
+        function activateSelectedRound() {
+            currentRoundId = document.getElementById("round-select").value;
+            let r = roundsData[currentRoundId];
+            if (!r) return;
+
+            // Timer & UI zurücksetzen
+            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            timerSeconds = 15 * 60;
+            updateTimerDisplay();
+            document.getElementById("start-timer-btn").disabled = false;
+            document.getElementById("start-timer-btn").innerText = "Start";
+            document.getElementById("problem-view").style.display = "block";
+            document.getElementById("reward-view").style.display = "none";
+
+            document.getElementById("prob-title").innerText = r.title;
+            document.getElementById("prob-desc").innerText = r.desc;
+            let t = r.targetStats;
+            document.getElementById("prob-targets").innerText = 
+                `${t.Theorie} Theorie | ${t.Software} Software | ${t.Hardware} Hardware | ${t.Design} Design | ${t.Vision} Vision`;
+
+            // Öffentlichen Spielstatus in Firebase setzen (ohne Karten-Stats!)
+            db.ref('gameState').set({
+                roundId: currentRoundId,
+                roundTitle: r.title,
+                status: "active",
+                rewardToken: null,
+                rewardCard: null
+            });
+
+            listenToRoundSubmissions(currentRoundId);
+        }
+
+        function listenToRoundSubmissions(roundId) {
+            if (roundListenerRef) roundListenerRef.off();
+            submissions = [];
+            renderLeaderboard();
+
+            roundListenerRef = db.ref('leaderboard/' + roundId);
+            roundListenerRef.on('value', (snapshot) => {
+                submissions = [];
+                let allSubs = snapshot.val() || {};
+                let targetStats = roundsData[roundId].targetStats;
+
+                for (let teamPin in allSubs) {
+                    let data = allSubs[teamPin];
+                    let teamStats = { Theorie: 0, Software: 0, Hardware: 0, Design: 0, Vision: 0 };
+                    
+                    // Berechne die Stats geheim im Beamer anhand der gespielten Karten!
+                    (data.playedCards || []).forEach(cardKey => {
+                        let s = secretCardStats[cardKey];
+                        if (s) {
+                            attributes.forEach(a => { teamStats[a] += s[a]; });
+                        }
+                    });
+
+                    let totalError = 0;
+                    attributes.forEach(a => {
+                        totalError += Math.abs(teamStats[a] - targetStats[a]);
+                    });
+
+                    submissions.push({
+                        teamPin: teamPin,
+                        teamName: data.teamName || ("Team " + teamPin),
+                        error: totalError,
+                        playedCards: data.playedCards || []
+                    });
+                }
+                if (!showSemesterLb) renderLeaderboard();
+            });
+        }
+
         function endRound() {
             if (timerInterval) {
                 clearInterval(timerInterval);
@@ -155,62 +343,102 @@
             document.getElementById("problem-view").style.display = "none";
             document.getElementById("reward-view").style.display = "block";
             
+            let r = roundsData[currentRoundId];
+            let token = Math.random().toString(36).substring(2, 10);
+
+            // Setze Status auf "ended" und speichere einmaliges Token
+            db.ref('gameState').update({
+                status: "ended",
+                rewardToken: token,
+                rewardCard: r.rewardCard
+            });
+
+            // Semester-Punkte für alle teilnehmenden Teams dieser Runde gutschreiben
+            submissions.forEach(sub => {
+                let pointsEarned = Math.max(10, 100 - sub.error); // Mindestens 10 Teilnahmepunkte, bis zu 100 bei 0 Fehlern
+                db.ref('semesterScores/' + sub.teamPin).once('value').then(snap => {
+                    let existing = snap.val() || { teamName: sub.teamName, totalPoints: 0, roundsPlayed: 0, lastRoundAdded: "" };
+                    if (existing.lastRoundAdded !== currentRoundId) {
+                        db.ref('semesterScores/' + sub.teamPin).set({
+                            teamName: sub.teamName,
+                            totalPoints: existing.totalPoints + pointsEarned,
+                            roundsPlayed: existing.roundsPlayed + 1,
+                            lastRoundAdded: currentRoundId
+                        });
+                    }
+                });
+            });
+
+            document.getElementById("reward-name").innerText = "Belohnung: " + r.rewardName;
             document.getElementById("reward-qrcode").innerHTML = ""; 
+            let rewardUrl = `https://floxe.github.io/Informatik-TCG/student.html?newcard=${r.rewardCard}&round=${currentRoundId}&token=${token}`;
             new QRCode(document.getElementById("reward-qrcode"), {
-                text: "https://floxe.github.io/Informatik-TCG/student.html?newcard=hopper",
-                width: 250,
-                height: 250
+                text: rewardUrl,
+                width: 240,
+                height: 240
             });
         }
 
-        // --- Firebase & Leaderboard Logik ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyCyHK3ffOccGryw03jQphYXMpP3tC6Xgpk",
-            authDomain: "informatik-tcg.firebaseapp.com",
-            projectId: "informatik-tcg",
-            databaseURL: "https://informatik-tcg-default-rtdb.europe-west1.firebasedatabase.app", 
-            storageBucket: "informatik-tcg.firebasestorage.app",
-            messagingSenderId: "212430356994",
-            appId: "1:212430356994:web:9a3947fbe34701bfbcdd1b",
-            measurementId: "G-J8YP14HRVM"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        function toggleLeaderboardMode() {
+            showSemesterLb = !showSemesterLb;
+            let btn = document.getElementById("toggle-lb-btn");
+            let title = document.getElementById("lb-title");
+            let sub = document.getElementById("lb-subtitle");
 
-        const targetStats = { Theorie: 12, Software: 15, Hardware: 18, Design: 22, Vision: 15 };
-        const attributes = ["Theorie", "Software", "Hardware", "Design", "Vision"];
-        
-        const allCards = {
-            turing: { name: "Alan Turing" },
-            allen: { name: "Frances E. Allen" },
-            clarke: { name: "Edith Clarke" },
-            ellis: { name: "Clarence Ellis" },
-            kare: { name: "Susan Kare" },
-            hopper: { name: "Grace Hopper" }
-        };
-
-        let submissions = [];
+            if (showSemesterLb) {
+                btn.innerText = "📊 Zeige: Runden-Leaderboard";
+                title.innerText = "🏆 Globales Semester-Leaderboard";
+                sub.innerText = "(Gesamtpunkte aller bisherigen Vorlesungs-Runden)";
+            } else {
+                btn.innerText = "🏆 Zeige: Semester-Leaderboard";
+                title.innerText = "Live Runden-Leaderboard";
+                sub.innerText = "(Klicke auf ein Team, um die gespielten Karten zu sehen)";
+            }
+            renderLeaderboard();
+        }
 
         function toggleDetails(index) {
             let el = document.getElementById("details-" + index);
-            el.style.display = (el.style.display === "none") ? "block" : "none";
+            if (el) el.style.display = (el.style.display === "none") ? "block" : "none";
         }
 
         function renderLeaderboard() {
+            let container = document.getElementById("lb-content");
+            if (showSemesterLb) {
+                let list = Object.keys(semesterScores).map(pin => semesterScores[pin]);
+                list.sort((a, b) => b.totalPoints - a.totalPoints);
+                if (list.length === 0) {
+                    container.innerHTML = `<p style="text-align: center; color: #7f8c8d;">Noch keine Semester-Punkte vorhanden.</p>`;
+                    return;
+                }
+                let html = "";
+                list.forEach((entry, idx) => {
+                    let rankClass = idx === 0 ? "rank-1" : "";
+                    html += `<div class="leaderboard-item">
+                                <div class="leaderboard-row ${rankClass}">
+                                    <span>#${idx + 1} - <b>${entry.teamName}</b> <small>(${entry.roundsPlayed} Runden)</small></span>
+                                    <span>${entry.totalPoints} Punkte</span>
+                                </div>
+                             </div>`;
+                });
+                container.innerHTML = html;
+                return;
+            }
+
+            // Runden-Leaderboard
             submissions.sort((a, b) => a.error - b.error);
+            if (submissions.length === 0) {
+                container.innerHTML = `<p style="text-align: center; color: #7f8c8d;">Warte auf Einreichungen...</p>`;
+                return;
+            }
             let html = "";
             submissions.forEach((sub, index) => {
                 let rankClass = index === 0 ? "rank-1" : "";
                 let cardsHtml = "";
-                if (sub.playedCards && sub.playedCards.length > 0) {
-                    sub.playedCards.forEach(cardKey => {
-                        let cardName = allCards[cardKey] ? allCards[cardKey].name : cardKey;
-                        cardsHtml += `<span class="played-card">${cardName}</span>`;
-                    });
-                } else {
-                    cardsHtml = "<span class='played-card'>Keine Karteninfos mitgesendet</span>";
-                }
+                sub.playedCards.forEach(cardKey => {
+                    let cName = cardNames[cardKey] || cardKey;
+                    cardsHtml += `<span class="played-card">${cName}</span>`;
+                });
 
                 html += `<div class="leaderboard-item" onclick="toggleDetails(${index})">
                             <div class="leaderboard-row ${rankClass}">
@@ -223,28 +451,8 @@
                             </div>
                          </div>`;
             });
-            document.getElementById("lb-content").innerHTML = html;
+            container.innerHTML = html;
         }
-
-        db.ref('leaderboard').on('child_added', (snapshot) => {
-            let data = snapshot.val();
-            let totalError = 0;
-            
-            attributes.forEach(a => {
-                totalError += Math.abs(data.stats[a] - targetStats[a]);
-            });
-
-            let tName = data.teamName ? data.teamName : "Team " + data.teamPin;
-
-            submissions.push({ 
-                teamPin: data.teamPin, 
-                teamName: tName, 
-                error: totalError,
-                playedCards: data.playedCards || [] 
-            });
-            
-            renderLeaderboard();
-        });
     </script>
 </body>
 </html>
