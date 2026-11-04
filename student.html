@@ -9,29 +9,92 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --primary: #2c3e50; --secondary: #18bc9c; --bg: #ecf0f1; --text: #333; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 10px; text-align: center; }
-        .container { background: white; padding: 20px; border-radius: 10px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn { background: var(--secondary); color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-size: 1.1em; cursor: pointer; margin-top: 10px; font-weight: bold; }
-        .btn:disabled { background: #95a5a6; }
-        input { padding: 10px; width: calc(100% - 24px); font-size: 1.2em; text-align: center; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); padding: 10px; text-align: center; margin: 0; }
+        .container { background: white; padding: 20px; border-radius: 12px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .btn { background: var(--secondary); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 1.05em; cursor: pointer; margin-top: 10px; font-weight: bold; }
+        .btn:disabled { background: #95a5a6; cursor: not-allowed; }
+        input { padding: 10px; width: calc(100% - 24px); font-size: 1.1em; text-align: center; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; }
         
-        .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; margin-bottom: 25px;}
-        .card { border: 2px solid #bdc3c7; border-radius: 5px; padding: 5px; cursor: pointer; user-select: none; position: relative; }
-        .card.selected { border-color: var(--secondary); background: #e8f8f5; box-shadow: 0 0 10px rgba(24, 188, 156, 0.5); }
-        .card img { width: 100%; height: 120px; object-fit: cover; border-radius: 3px; pointer-events: none; }
-        .card h4 { margin: 5px 0; font-size: 0.9em; pointer-events: none; }
-        
-        .info-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.8); border-radius: 50%; width: 25px; height: 25px; display: flex; justify-content: center; align-items: center; text-decoration: none; font-size: 14px; font-weight: bold; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 10; }
+        /* Horizontales Swipe-Karussell für echte Sammelkarten-Optik */
+        .cards-carousel {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            gap: 16px;
+            padding: 15px 10px 25px 10px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .cards-carousel::-webkit-scrollbar { height: 8px; }
+        .cards-carousel::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 4px; }
+
+        /* Trading Card Look */
+        .tcg-card {
+            flex: 0 0 210px;
+            scroll-snap-align: center;
+            background: linear-gradient(145deg, #ffffff, #f1f4f6);
+            border: 4px solid #34495e;
+            border-radius: 14px;
+            padding: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            position: relative;
+            text-align: left;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .tcg-card.selected {
+            border-color: var(--secondary);
+            background: linear-gradient(145deg, #e8f8f5, #d1f2eb);
+            transform: translateY(-6px);
+            box-shadow: 0 12px 20px rgba(24, 188, 156, 0.4);
+        }
+        .tcg-card-header {
+            font-weight: bold;
+            font-size: 1.05em;
+            color: var(--primary);
+            margin-bottom: 8px;
+            padding-right: 28px;
+        }
+        .tcg-card img {
+            width: 100%;
+            height: 170px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #bdc3c7;
+            pointer-events: none;
+        }
+        .tcg-card-desc {
+            font-size: 0.82em;
+            color: #555;
+            margin-top: 10px;
+            line-height: 1.35;
+            background: rgba(255,255,255,0.7);
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        .info-btn {
+            position: absolute; top: 10px; right: 10px;
+            background: var(--primary); color: white;
+            border-radius: 50%; width: 26px; height: 26px;
+            display: flex; justify-content: center; align-items: center;
+            text-decoration: none; font-size: 13px; font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;
+        }
         
         #qrcode { display: flex; justify-content: center; margin: 15px 0; }
         #view-start, #view-leader, #view-member, #view-reward { display: none; }
         
-        .role-banner { padding: 15px; border-radius: 5px; margin-bottom: 20px; font-size: 1.1em; }
+        .role-banner { padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 1em; }
         .role-leader { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .role-member { background: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
 
-        .success-msg { background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-top: 15px; font-weight: bold; display: none; }
+        .saved-team-box { background: #eaf2f8; border: 1px solid #a9cce3; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        .success-msg { background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-top: 15px; font-weight: bold; display: none; }
         .error-toast { color: #e74c3c; font-weight: bold; font-size: 0.9em; min-height: 20px; margin-top: 5px; }
+        .swipe-hint { font-size: 0.8em; color: #7f8c8d; margin-top: -5px; }
     </style>
 </head>
 <body>
@@ -40,62 +103,71 @@
         
         <!-- REWARD VIEW -->
         <div id="view-reward">
-            <h2>🎉 Neue Karte freigeschaltet!</h2>
-            <p>Du hast diese Karte für dein persönliches Deck gesammelt:</p>
-            <div id="reward-card-container" style="margin-bottom: 20px;"></div>
+            <h2 id="reward-title">Prüfe Berechtigung...</h2>
+            <p id="reward-status-text"></p>
+            <div id="reward-card-container" style="display: flex; justify-content: center; margin: 20px 0;"></div>
             <button class="btn" onclick="window.location.href = window.location.pathname;">Weiter zum Hauptmenü</button>
         </div>
 
         <!-- START VIEW -->
         <div id="view-start">
             <h1>Informatics TCG</h1>
-            <p>Du hast <b id="deck-count">3</b> Karten in deinem Deck.</p>
+            <p style="font-size: 0.9em; color: #666;" id="active-round-banner">Verbinde mit Hörsaal...</p>
             
+            <!-- Bestehendes Semester-Team reaktivieren -->
+            <div id="saved-team-section" class="saved-team-box" style="display: none;">
+                <div style="font-size: 0.9em; margin-bottom: 8px;">🔄 <b>Dein Semester-Team weiterführen:</b><br><span id="saved-team-label"></span></div>
+                <button class="btn" style="margin-top: 0; background: #2980b9;" onclick="reactivateSavedTeam()">Als Teamleader für diese Runde öffnen</button>
+            </div>
+
             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
-                <input type="text" id="team-name" maxlength="25" placeholder="Team-Name (max 25 Zeichen)">
+                <input type="text" id="team-name" maxlength="25" placeholder="Neuer Team-Name (max 25 Zeichen)">
                 <button class="btn" onclick="createTeam()">Neues Team gründen</button>
                 <hr style="margin: 15px 0; border: none; border-top: 1px solid #ccc;">
-                <input type="tel" id="join-pin" maxlength="4" placeholder="Team-PIN (genau 4 Zahlen)">
+                <input type="tel" id="join-pin" maxlength="4" placeholder="Team-PIN (4 Zahlen)">
                 <button class="btn" style="background: var(--primary);" onclick="joinTeam()">Team beitreten</button>
                 <div id="join-error" class="error-toast"></div>
             </div>
 
-            <h3>Deine aktuellen Karten:</h3>
-            <div class="cards-grid" id="start-my-cards-grid"></div>
+            <h3>Dein Kartendeck (<span id="deck-count">3</span>):</h3>
+            <p class="swipe-hint">↔️ Wische horizontal durch deine Karten</p>
+            <div class="cards-carousel" id="start-my-cards-grid"></div>
         </div>
 
         <!-- LEADER VIEW -->
         <div id="view-leader">
-            <div class="role-banner role-leader"><b>Du bist Teamleader!</b> Wähle bis zu 5 Karten für die Lösung.</div>
+            <div class="role-banner role-leader">👑 <b>Du bist Teamleader!</b> Tippe unten im Pool bis zu 5 Karten an.</div>
             <h2>Team: <span id="leader-team-name"></span></h2>
             <p>PIN: <b id="team-pin-display" style="font-size: 1.5em; color: var(--primary);"></b></p>
-            <p>Lass andere diesen Code scannen, um beizutreten:</p>
+            <p style="font-size: 0.85em;">Lass deine heutigen Sitznachbarn diesen Code scannen:</p>
             <div id="qrcode"></div>
             
-            <hr style="margin: 25px 0;">
+            <hr style="margin: 20px 0;">
             <h3>Deine eigenen Karten:</h3>
-            <div class="cards-grid" id="leader-my-cards-grid"></div>
+            <div class="cards-carousel" id="leader-my-cards-grid"></div>
 
-            <h3>Team-Karten-Pool:</h3>
-            <div class="cards-grid" id="leader-pool-grid"></div>
+            <h3>Team-Karten-Pool (<span id="selected-count">0</span>/5 gewählt):</h3>
+            <p class="swipe-hint">↔️ Wische & tippe Karten an, um sie auszuwählen</p>
+            <div class="cards-carousel" id="leader-pool-grid"></div>
             
             <div id="leader-error" class="error-toast"></div>
             <button class="btn" id="submit-btn" onclick="submitSolution()">Lösung an Beamer senden</button>
-            <div id="success-message" class="success-msg">Eure Lösung wurde eingereicht. Bitte wartet auf das Ende der Runde.</div>
+            <div id="success-message" class="success-msg">Eure Lösung wurde eingereicht! Ihr seid nun für die Belohnungskarte am Ende der Runde freigeschaltet.</div>
         </div>
 
         <!-- MEMBER VIEW -->
         <div id="view-member">
-            <div class="role-banner role-member"><b>Du bist Teammitglied.</b> Besprecht euch! Nur der Leader kann einreichen.</div>
+            <div class="role-banner role-member">👤 <b>Du bist Teammitglied.</b> Recherchiert gemeinsam! Der Leader wählt aus.</div>
             <h2>Team: <span id="member-team-name"></span></h2>
             <p>PIN: <b id="member-team-pin" style="font-size: 1.5em; color: var(--primary);"></b></p>
             
-            <hr style="margin: 25px 0;">
+            <hr style="margin: 20px 0;">
             <h3>Deine eigenen Karten:</h3>
-            <div class="cards-grid" id="member-my-cards-grid"></div>
+            <div class="cards-carousel" id="member-my-cards-grid"></div>
 
             <h3>Karten-Pool des gesamten Teams:</h3>
-            <div class="cards-grid" id="member-pool-grid"></div>
+            <p class="swipe-hint">↔️ Wische durch alle verfügbaren Karten eures Teams</p>
+            <div class="cards-carousel" id="member-pool-grid"></div>
         </div>
     </div>
 
@@ -114,14 +186,44 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const attributes = ["Theorie", "Software", "Hardware", "Design", "Vision"];
+        // KEINE STATS MEHR IM QUELLCODE! Nur Name, Bild, Kurzbeschreibung & Wiki-Link
         const allCards = {
-            turing: { name: "Alan Turing", img: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Alan_Turing_Aged_16.jpg", link: "https://de.wikipedia.org/wiki/Alan_Turing", stats: { Theorie: 5, Software: 4, Hardware: 3, Design: 1, Vision: 5 } },
-            allen: { name: "Frances E. Allen", img: "https://upload.wikimedia.org/wikipedia/commons/1/15/Allen_mg_2528-3750K-b.jpg", link: "https://de.wikipedia.org/wiki/Frances_E._Allen", stats: { Theorie: 3, Software: 5, Hardware: 3, Design: 1, Vision: 4 } },
-            clarke: { name: "Edith Clarke", img: "https://upload.wikimedia.org/wikipedia/commons/9/92/Edith_Clarke.jpg", link: "https://de.wikipedia.org/wiki/Edith_Clarke", stats: { Theorie: 5, Software: 1, Hardware: 5, Design: 1, Vision: 4 } },
-            ellis: { name: "Clarence Ellis", img: "https://siebelschool.illinois.edu/_sitemanager/viewphoto.aspx?id=9149&s=1200", link: "https://en.wikipedia.org/wiki/Clarence_Ellis_(computer_scientist)", stats: { Theorie: 3, Software: 4, Hardware: 1, Design: 5, Vision: 5 } },
-            kare: { name: "Susan Kare", img: "https://upload.wikimedia.org/wikipedia/commons/8/88/SusanKare2019photo.jpg", link: "https://de.wikipedia.org/wiki/Susan_Kare", stats: { Theorie: 1, Software: 2, Hardware: 1, Design: 5, Vision: 4 } },
-            hopper: { name: "Grace Hopper", img: "https://upload.wikimedia.org/wikipedia/commons/a/ad/Commodore_Grace_M._Hopper%2C_USN_%28covered%29.jpg", link: "https://de.wikipedia.org/wiki/Grace_Hopper", stats: { Theorie: 4, Software: 5, Hardware: 2, Design: 1, Vision: 5 } }
+            turing: { 
+                name: "Alan Turing", 
+                img: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Alan_Turing_Aged_16.jpg", 
+                link: "https://de.wikipedia.org/wiki/Alan_Turing", 
+                desc: "Pionier der theoretischen Informatik und Kryptoanalyse; schuf das Konzept der Turingmaschine." 
+            },
+            allen: { 
+                name: "Frances E. Allen", 
+                img: "https://upload.wikimedia.org/wikipedia/commons/1/15/Allen_mg_2528-3750K-b.jpg", 
+                link: "https://de.wikipedia.org/wiki/Frances_E._Allen", 
+                desc: "Revolutionierte die Compiler-Optimierung und parallele Ausführung bei Hochleistungsrechnern." 
+            },
+            clarke: { 
+                name: "Edith Clarke", 
+                img: "https://upload.wikimedia.org/wikipedia/commons/9/92/Edith_Clarke.jpg", 
+                link: "https://de.wikipedia.org/wiki/Edith_Clarke", 
+                desc: "Erste Elektroingenieurin am MIT; erfand den grafischen Clarke-Rechner für komplexe Stromnetze." 
+            },
+            ellis: { 
+                name: "Clarence Ellis", 
+                img: "https://siebelschool.illinois.edu/_sitemanager/viewphoto.aspx?id=9149&s=1200", 
+                link: "https://en.wikipedia.org/wiki/Clarence_Ellis_(computer_scientist)", 
+                desc: "Wegbereiter von Groupware und kollaborativen Systemen für gleichzeitiges Arbeiten am PC." 
+            },
+            kare: { 
+                name: "Susan Kare", 
+                img: "https://upload.wikimedia.org/wikipedia/commons/8/88/SusanKare2019photo.jpg", 
+                link: "https://de.wikipedia.org/wiki/Susan_Kare", 
+                desc: "Prägte die visuelle Sprache früher grafischer Benutzeroberflächen durch ikonische Pixel-Art." 
+            },
+            hopper: { 
+                name: "Grace Hopper", 
+                img: "https://upload.wikimedia.org/wikipedia/commons/a/ad/Commodore_Grace_M._Hopper%2C_USN_%28covered%29.jpg", 
+                link: "https://de.wikipedia.org/wiki/Grace_Hopper", 
+                desc: "Entwickelte den ersten Compiler (A-0) und legte den Grundstein für maschinenunabhängige Sprachen." 
+            }
         };
 
         let myDeck = [];
@@ -141,41 +243,106 @@
 
         let currentRoom = "";
         let teamName = "";
+        let currentRoundId = "round1";
         let hasSubmitted = false;
         let teamPoolSet = new Set();
         let selectedCards = []; 
 
+        // Aktuellen Runden-Status abonnieren
+        db.ref('gameState').on('value', snap => {
+            if (snap.exists()) {
+                let gs = snap.val();
+                currentRoundId = gs.roundId || "round1";
+                document.getElementById("active-round-banner").innerText = "Aktive Runde: " + (gs.roundTitle || currentRoundId);
+            }
+        });
+
         const urlParams = new URLSearchParams(window.location.search);
         const urlRoom = urlParams.get('room');
-        const urlNewCard = urlParams.get('newcard'); 
+        const urlNewCard = urlParams.get('newcard');
+        const urlRound = urlParams.get('round');
+        const urlToken = urlParams.get('token');
         
         if (urlNewCard && allCards[urlNewCard]) {
-            if (!myDeck.includes(urlNewCard)) {
-                myDeck.push(urlNewCard);
-                localStorage.setItem("myInformaticsTCGDeck", JSON.stringify(myDeck));
-            }
-            document.getElementById("view-reward").style.display = "block";
-            let card = allCards[urlNewCard];
-            document.getElementById("reward-card-container").innerHTML = `
-                <div class="card" style="max-width: 200px; margin: 0 auto; border-color: var(--secondary); background: #e8f8f5;">
-                    <a href="${card.link}" target="_blank" class="info-btn" title="Mehr Infos">ℹ️</a>
-                    <img src="${card.img}" alt="${card.name}">
-                    <h4>${card.name}</h4>
-                </div>`;
+            verifyAndClaimReward(urlNewCard, urlRound, urlToken);
         } else if (urlRoom) {
             document.getElementById("join-pin").value = urlRoom;
             joinTeam();
         } else {
+            initStartScreen();
+        }
+
+        function initStartScreen() {
             document.getElementById("deck-count").innerText = myDeck.length;
             document.getElementById("view-start").style.display = "block";
             let startGrid = document.getElementById("start-my-cards-grid");
             myDeck.forEach(c => renderCard(c, startGrid, false));
+
+            // Prüfen, ob ein gespeichertes Semester-Team existiert
+            let savedTeam = JSON.parse(localStorage.getItem("mySavedTCGTeam") || "null");
+            if (savedTeam && savedTeam.pin && savedTeam.name) {
+                document.getElementById("saved-team-section").style.display = "block";
+                document.getElementById("saved-team-label").innerText = `${savedTeam.name} (PIN: ${savedTeam.pin})`;
+            }
+        }
+
+        // Prüft streng, ob der Spieler in dieser Runde in einem Team war, das eingereicht hat!
+        function verifyAndClaimReward(cardKey, roundParam, tokenParam) {
+            document.getElementById("view-reward").style.display = "block";
+            let titleEl = document.getElementById("reward-title");
+            let statusEl = document.getElementById("reward-status-text");
+            let myLastTeam = localStorage.getItem("lastActiveTeamPin");
+
+            if (!myLastTeam || !roundParam || !tokenParam) {
+                titleEl.innerText = "❌ Nicht berechtigt";
+                statusEl.innerText = "Du hast in dieser Runde an keinem Team teilgenommen.";
+                return;
+            }
+
+            db.ref('gameState').once('value').then(gsSnap => {
+                let gs = gsSnap.val() || {};
+                if (gs.status !== "ended" || gs.roundId !== roundParam || gs.rewardToken !== tokenParam) {
+                    titleEl.innerText = "⏳ Code abgelaufen";
+                    statusEl.innerText = "Dieser Belohnungs-Code ist nicht mehr aktiv.";
+                    return;
+                }
+
+                // Prüfen, ob das eigene Team in dieser Runde eingereicht hat
+                db.ref(`rooms/${myLastTeam}/submittedRounds/${roundParam}`).once('value').then(subSnap => {
+                    if (subSnap.val() === true) {
+                        if (!myDeck.includes(cardKey)) {
+                            myDeck.push(cardKey);
+                            localStorage.setItem("myInformaticsTCGDeck", JSON.stringify(myDeck));
+                        }
+                        titleEl.innerText = "🎉 Neue Karte freigeschaltet!";
+                        statusEl.innerText = "Danke fürs Mitspielen in dieser Runde! Diese Karte gehört jetzt zu deinem Deck:";
+                        renderCard(cardKey, document.getElementById("reward-card-container"), false);
+                    } else {
+                        titleEl.innerText = "❌ Keine Einreichung gefunden";
+                        statusEl.innerText = "Dein Team (" + myLastTeam + ") hat in dieser Runde leider keine Lösung eingereicht.";
+                    }
+                });
+            });
         }
 
         function createTeam() {
             teamName = document.getElementById("team-name").value.trim() || "Anonymes Team";
-            currentRoom = Math.floor(1000 + Math.random() * 9000).toString(); 
-            
+            currentRoom = Math.floor(1000 + Math.random() * 9000).toString();
+            openLeaderRoom(currentRoom, teamName);
+        }
+
+        function reactivateSavedTeam() {
+            let savedTeam = JSON.parse(localStorage.getItem("mySavedTCGTeam"));
+            if (!savedTeam) return;
+            openLeaderRoom(savedTeam.pin, savedTeam.name);
+        }
+
+        function openLeaderRoom(pin, name) {
+            currentRoom = pin;
+            teamName = name;
+            localStorage.setItem("mySavedTCGTeam", JSON.stringify({ pin: currentRoom, name: teamName }));
+            localStorage.setItem("lastActiveTeamPin", currentRoom);
+
             document.getElementById("view-start").style.display = "none";
             document.getElementById("view-leader").style.display = "block";
             document.getElementById("team-pin-display").innerText = currentRoom;
@@ -183,20 +350,19 @@
             document.getElementById("submit-btn").disabled = true;
 
             let joinUrl = window.location.href.split('?')[0] + "?room=" + currentRoom;
+            document.getElementById("qrcode").innerHTML = "";
             new QRCode(document.getElementById("qrcode"), { text: joinUrl, width: 128, height: 128 });
 
-            // Eigene Karten visuell in der Leader-Ansicht rendern
             let leaderMyGrid = document.getElementById("leader-my-cards-grid");
             myDeck.forEach(c => renderCard(c, leaderMyGrid, false));
 
-            // Backend: Team Info und eigene Karten (als leader) hochladen
+            // Raum für die aktuelle Runde öffnen und alten Member-Pool leeren
             db.ref('rooms/' + currentRoom + '/info').set({ name: teamName });
-            db.ref('rooms/' + currentRoom + '/members/leader').set(myDeck);
+            db.ref('rooms/' + currentRoom + '/members').set({ leader: myDeck });
 
-            // Lauschen auf ALLE Karten im Pool
             db.ref('rooms/' + currentRoom + '/members').on('child_added', (snapshot) => {
                 let memberCards = snapshot.val();
-                addCardsToPool(memberCards, true); // true = anklickbar, da Leader
+                addCardsToPool(memberCards, true);
             });
         }
 
@@ -204,17 +370,18 @@
             let errorBox = document.getElementById("join-error");
             errorBox.innerText = ""; 
             
-            let pinInput = document.getElementById("join-pin").value.replace(/\D/g, ''); // Nur Zahlen
+            let pinInput = document.getElementById("join-pin").value.replace(/\D/g, '');
             if (pinInput.length !== 4) {
                 errorBox.innerText = "Die PIN muss aus genau 4 Zahlen bestehen.";
                 return;
             }
 
-            // Validierung, ob der Raum existiert
             db.ref('rooms/' + pinInput + '/info').once('value').then((snapshot) => {
                 if (snapshot.exists()) {
                     currentRoom = pinInput;
                     teamName = snapshot.val().name;
+                    localStorage.setItem("mySavedTCGTeam", JSON.stringify({ pin: currentRoom, name: teamName }));
+                    localStorage.setItem("lastActiveTeamPin", currentRoom);
                     
                     document.getElementById("view-start").style.display = "none";
                     document.getElementById("view-member").style.display = "block";
@@ -229,7 +396,7 @@
 
                     db.ref('rooms/' + currentRoom + '/members').on('child_added', (snapshot) => {
                         let memberCards = snapshot.val();
-                        addCardsToPool(memberCards, false); // false = nicht anklickbar, da Member
+                        addCardsToPool(memberCards, false);
                     });
                 } else {
                     errorBox.innerText = "Dieses Team existiert nicht!";
@@ -239,13 +406,19 @@
 
         function renderCard(cardKey, container, isClickable) {
             let card = allCards[cardKey];
+            if (!card) return null;
             let div = document.createElement("div");
-            div.className = "card";
-            if(!isClickable) div.style.cursor = "default";
+            div.className = "tcg-card";
+            div.style.cursor = isClickable ? "pointer" : "default";
             
-            div.innerHTML = `<a href="${card.link}" target="_blank" class="info-btn" title="Mehr Infos" onclick="event.stopPropagation()">ℹ️</a>
-                             <img src="${card.img}" alt="${card.name}">
-                             <h4>${card.name}</h4>`;
+            div.innerHTML = `
+                <div>
+                    <a href="${card.link}" target="_blank" class="info-btn" title="Wikipedia öffnen" onclick="event.stopPropagation()">ℹ️</a>
+                    <div class="tcg-card-header">${card.name}</div>
+                    <img src="${card.img}" alt="${card.name}">
+                </div>
+                <div class="tcg-card-desc">${card.desc}</div>
+            `;
             container.appendChild(div);
             return div;
         }
@@ -254,11 +427,11 @@
             let grid = isLeader ? document.getElementById("leader-pool-grid") : document.getElementById("member-pool-grid");
             
             cardsArray.forEach(cardKey => {
-                // Keine doppelten Karten anzeigen
                 if(teamPoolSet.has(cardKey)) return;
                 teamPoolSet.add(cardKey);
                 
                 let div = renderCard(cardKey, grid, isLeader);
+                if (!div) return;
                 
                 if (isLeader) {
                     div.onclick = () => {
@@ -277,6 +450,7 @@
                                 errBox.innerText = "Maximal 5 Karten pro Team!";
                             }
                         }
+                        document.getElementById("selected-count").innerText = selectedCards.length;
                         document.getElementById("submit-btn").disabled = selectedCards.length === 0;
                     };
                 }
@@ -284,21 +458,19 @@
         }
 
         function submitSolution() {
-            if(hasSubmitted) return;
+            if(hasSubmitted || selectedCards.length === 0) return;
             hasSubmitted = true;
-            
-            let teamStats = { Theorie: 0, Software: 0, Hardware: 0, Design: 0, Vision: 0 };
-            selectedCards.forEach(key => {
-                let s = allCards[key].stats;
-                for (let a of attributes) { teamStats[a] += s[a]; }
-            });
 
-            db.ref('leaderboard').push({
+            // Keine Stats-Berechnung mehr am Handy! Es werden nur die gespielten Karten-Keys übermittelt.
+            db.ref(`leaderboard/${currentRoundId}/${currentRoom}`).set({
                 teamPin: currentRoom,
                 teamName: teamName,
-                stats: teamStats,
-                playedCards: selectedCards 
+                playedCards: selectedCards,
+                timestamp: Date.now()
             });
+
+            // Vermerken, dass dieses Team in dieser Runde teilgenommen hat (für Belohnungs-Check!)
+            db.ref(`rooms/${currentRoom}/submittedRounds/${currentRoundId}`).set(true);
             
             document.getElementById("submit-btn").style.display = "none";
             document.getElementById("success-message").style.display = "block";
