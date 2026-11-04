@@ -13,8 +13,8 @@
         
         /* Admin Login Overlay */
         #admin-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.96); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .login-box { background: white; padding: 30px; border-radius: 12px; width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .login-box input, .login-box textarea { width: calc(100% - 24px); padding: 12px; margin: 10px 0; font-size: 1em; border: 1px solid #ccc; border-radius: 6px; }
+        .login-box { background: white; padding: 30px; border-radius: 12px; width: 420px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .login-box input { width: calc(100% - 24px); padding: 12px; margin: 10px 0; font-size: 1em; border: 1px solid #ccc; border-radius: 6px; }
         .login-box button { background: var(--secondary); color: white; border: none; padding: 12px 20px; font-size: 1.1em; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
 
         /* Admin Top-Bar */
@@ -54,21 +54,13 @@
 </head>
 <body>
 
-    <!-- ADMIN LOGIN OVERLAY -->
+    <!-- ADMIN LOGIN OVERLAY (Nur Lesezugriff, kein Upload-Feld mehr) -->
     <div id="admin-overlay">
         <div class="login-box">
-            <h2>🔒 Beamer Admin-Login</h2>
-            <p style="font-size: 0.9em; color: #666;">Gib dein Admin-Passwort ein, um die geheimen Kartenwerte aus Firebase zu entsperren.</p>
-            <input type="password" id="admin-pass" placeholder="Admin-Passwort (z.B. tuwien2026)">
+            <h2>Beamer Admin-Login</h2>
+            <p style="font-size: 0.9em; color: #666;">Gib dein Admin-Passwort ein, um die geheimen Kartenwerte aus Firebase zu laden.</p>
+            <input type="password" id="admin-pass" placeholder="Admin-Passwort">
             <button onclick="loginAdmin()">Entsperren</button>
-            
-            <!-- Erscheint nur beim allerersten Mal, falls der Tresor unter diesem Passwort noch leer ist -->
-            <div id="initial-setup-box" style="display: none; margin-top: 20px; text-align: left;">
-                <hr>
-                <p style="font-size: 0.85em; color: #d35400;"><b>Erstmaliges Setup für dieses Passwort:</b> Füge hier einmalig das geheime Spiel-JSON ein, um es im Firebase-Tresor zu speichern:</p>
-                <textarea id="secret-json-input" rows="6" placeholder='{ "cardStats": {...}, "rounds": {...} }'></textarea>
-                <button onclick="saveInitialSecrets()">Geheime Daten im Tresor speichern</button>
-            </div>
             <div id="login-error" class="error-msg"></div>
         </div>
     </div>
@@ -76,12 +68,12 @@
     <!-- ADMIN STEUERLEISTE -->
     <div class="admin-bar">
         <div>
-            <span>🛠️ <b>Runden-Steuerung:</b></span>
+            <span><b>Runden-Steuerung:</b></span>
             <select id="round-select"></select>
             <button class="btn-activate" onclick="activateSelectedRound()">Runde im Hörsaal starten</button>
         </div>
         <div>
-            <button class="btn-toggle-lb" id="toggle-lb-btn" onclick="toggleLeaderboardMode()">🏆 Zeige: Semester-Leaderboard</button>
+            <button class="btn-toggle-lb" id="toggle-lb-btn" onclick="toggleLeaderboardMode()">Zeige: Semester-Leaderboard</button>
         </div>
     </div>
 
@@ -113,7 +105,7 @@
                 <span id="prob-targets"></span></p>
                 <p style="font-size: 0.75em; margin-top: 20px;">Jedes Team darf bis zu <b>5 Karten</b> kombinieren. Zu viel oder zu wenig gibt Fehlerpunkte!</p>
                 
-                <button class="btn-end" onclick="endRound()">🛑 RUNDE BEENDEN & BELOHNUNG ZEIGEN</button>
+                <button class="btn-end" onclick="endRound()">RUNDE BEENDEN & BELOHNUNG ZEIGEN</button>
             </div>
 
             <div class="reward-box" id="reward-view">
@@ -150,15 +142,57 @@
 
         const attributes = ["Theorie", "Software", "Hardware", "Design", "Vision"];
         const cardNames = {
-            turing: "Alan Turing",
-            allen: "Frances E. Allen",
+            chwarizmi: "Muhammad ibn Musa al-Chwarizmi",
+            schickard: "Wilhelm Schickard",
+            newton: "Isaac Newton",
+            leibniz: "Gottfried Wilhelm Leibniz",
+            babbage: "Charles Babbage",
+            lovelace: "Ada Lovelace",
+            boole: "George Boole",
+            hollerith: "Herman Hollerith",
+            noether: "Emmy Noether",
             clarke: "Edith Clarke",
+            rhodes: "Ida Rhodes",
+            neumann: "John von Neumann",
+            peter: "Rózsa Péter",
+            hopper: "Grace Hopper",
+            vaughan: "Dorothy Vaughan",
+            turing: "Alan Turing",
+            keller: "Mary Keller",
+            lamarr: "Hedy Lamarr",
+            holberton: "Frances Holberton",
+            antonelli: "Kathleen Antonelli",
+            meltzer: "Marlyn Meltzer",
+            spence: "Frances Spence",
+            estrin: "Thelma Estrin",
+            bartik: "Jean Bartik",
+            teitelbaum: "Ruth Teitelbaum",
+            engelbart: "Douglas Engelbart",
+            hoover: "Erna Schneider Hoover",
+            sammet: "Jean Sammet",
+            windsor: "Edith Windsor",
+            goto: "Eiichi Goto",
+            allen: "Frances E. Allen",
+            shirley: "Stephanie Shirley",
+            ulery: "Dana Ulery",
+            milhon: "Jude Milhon",
+            liskov: "Barbara Liskov",
             ellis: "Clarence Ellis",
+            c_floyd: "Christiane Floyd",
+            goldberg: "Adele Goldberg",
+            s_floyd: "Sally Floyd",
+            perlman: "Radia Perlman",
+            williams: "Roberta Williams",
             kare: "Susan Kare",
-            hopper: "Grace Hopper"
+            jobs: "Steve Jobs",
+            gates: "Bill Gates",
+            tardos: "Eva Tardos",
+            wilson: "Sophie Wilson",
+            asakawa: "Chieko Asakawa",
+            goldwasser: "Shafi Goldwasser",
+            mayer: "Marissa Mayer"
         };
 
-        // Geheime Daten (werden erst nach Passwort-Login aus Firebase geladen!)
         let secretCardStats = {};
         let roundsData = {};
         let currentRoundId = "round1";
@@ -206,7 +240,7 @@
             });
         };
 
-        // --- Admin Login & Tresor-Abfrage ---
+        // --- Admin Login & Tresor-Abfrage (Nur Lesezugriff) ---
         function loginAdmin() {
             adminPass = document.getElementById("admin-pass").value.trim();
             let errEl = document.getElementById("login-error");
@@ -220,27 +254,11 @@
                     roundsData = data.rounds;
                     unlockBeamer();
                 } else {
-                    document.getElementById("initial-setup-box").style.display = "block";
-                    errEl.innerText = "Unter diesem Passwort liegen noch keine Daten. Falls du ein neues Passwort einrichtest, füge unten das JSON ein.";
+                    errEl.innerText = "Falsches Passwort oder keine Daten im Backend hinterlegt.";
                 }
             }).catch(err => {
-                errEl.innerText = "Zugriff verweigert (Prüfe die Firebase-Regeln!).";
+                errEl.innerText = "Zugriff verweigert.";
             });
-        }
-
-        function saveInitialSecrets() {
-            let raw = document.getElementById("secret-json-input").value;
-            try {
-                let parsed = JSON.parse(raw);
-                if (!parsed.cardStats || !parsed.rounds) throw new Error("Format ungültig");
-                db.ref('admin_secrets/' + adminPass).set(parsed).then(() => {
-                    secretCardStats = parsed.cardStats;
-                    roundsData = parsed.rounds;
-                    unlockBeamer();
-                });
-            } catch (e) {
-                document.getElementById("login-error").innerText = "Ungültiges JSON-Format!";
-            }
         }
 
         function unlockBeamer() {
@@ -254,7 +272,6 @@
                 select.appendChild(opt);
             }
 
-            // Semester-Scores abonnieren
             db.ref('semesterScores').on('value', snap => {
                 semesterScores = snap.val() || {};
                 if (showSemesterLb) renderLeaderboard();
@@ -268,7 +285,6 @@
             let r = roundsData[currentRoundId];
             if (!r) return;
 
-            // Timer & UI zurücksetzen
             if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
             timerSeconds = 15 * 60;
             updateTimerDisplay();
@@ -283,7 +299,6 @@
             document.getElementById("prob-targets").innerText = 
                 `${t.Theorie} Theorie | ${t.Software} Software | ${t.Hardware} Hardware | ${t.Design} Design | ${t.Vision} Vision`;
 
-            // Öffentlichen Spielstatus in Firebase setzen (ohne Karten-Stats!)
             db.ref('gameState').set({
                 roundId: currentRoundId,
                 roundTitle: r.title,
@@ -310,7 +325,6 @@
                     let data = allSubs[teamPin];
                     let teamStats = { Theorie: 0, Software: 0, Hardware: 0, Design: 0, Vision: 0 };
                     
-                    // Berechne die Stats geheim im Beamer anhand der gespielten Karten!
                     (data.playedCards || []).forEach(cardKey => {
                         let s = secretCardStats[cardKey];
                         if (s) {
@@ -346,16 +360,14 @@
             let r = roundsData[currentRoundId];
             let token = Math.random().toString(36).substring(2, 10);
 
-            // Setze Status auf "ended" und speichere einmaliges Token
             db.ref('gameState').update({
                 status: "ended",
                 rewardToken: token,
                 rewardCard: r.rewardCard
             });
 
-            // Semester-Punkte für alle teilnehmenden Teams dieser Runde gutschreiben
             submissions.forEach(sub => {
-                let pointsEarned = Math.max(10, 100 - sub.error); // Mindestens 10 Teilnahmepunkte, bis zu 100 bei 0 Fehlern
+                let pointsEarned = Math.max(10, 100 - sub.error);
                 db.ref('semesterScores/' + sub.teamPin).once('value').then(snap => {
                     let existing = snap.val() || { teamName: sub.teamName, totalPoints: 0, roundsPlayed: 0, lastRoundAdded: "" };
                     if (existing.lastRoundAdded !== currentRoundId) {
@@ -386,11 +398,11 @@
             let sub = document.getElementById("lb-subtitle");
 
             if (showSemesterLb) {
-                btn.innerText = "📊 Zeige: Runden-Leaderboard";
-                title.innerText = "🏆 Globales Semester-Leaderboard";
+                btn.innerText = "Zeige: Runden-Leaderboard";
+                title.innerText = "Globales Semester-Leaderboard";
                 sub.innerText = "(Gesamtpunkte aller bisherigen Vorlesungs-Runden)";
             } else {
-                btn.innerText = "🏆 Zeige: Semester-Leaderboard";
+                btn.innerText = "Zeige: Semester-Leaderboard";
                 title.innerText = "Live Runden-Leaderboard";
                 sub.innerText = "(Klicke auf ein Team, um die gespielten Karten zu sehen)";
             }
@@ -425,7 +437,6 @@
                 return;
             }
 
-            // Runden-Leaderboard
             submissions.sort((a, b) => a.error - b.error);
             if (submissions.length === 0) {
                 container.innerHTML = `<p style="text-align: center; color: #7f8c8d;">Warte auf Einreichungen...</p>`;
