@@ -485,7 +485,7 @@
         };
 
         let myDeck = [];
-        const savedDeck = localStorage.getItem("myInformaticsTCGDeck");
+        const savedDeck = localStorage.getItem("myInformaticsTCGDeck_v2");
 
         if (savedDeck) {
             myDeck = JSON.parse(savedDeck);
@@ -497,7 +497,7 @@
                 [startKeys[i], startKeys[j]] = [startKeys[j], startKeys[i]];
             }
             myDeck = startKeys.slice(0, 3);
-            localStorage.setItem("myInformaticsTCGDeck", JSON.stringify(myDeck));
+            localStorage.setItem("myInformaticsTCGDeck_v2", JSON.stringify(myDeck));
         }
 
         let currentRoom = "";
@@ -571,7 +571,7 @@
                     if (subSnap.val() === true) {
                         if (!myDeck.includes(cardKey)) {
                             myDeck.push(cardKey);
-                            localStorage.setItem("myInformaticsTCGDeck", JSON.stringify(myDeck));
+                            localStorage.setItem("myInformaticsTCGDeck_v2", JSON.stringify(myDeck));
                         }
                         titleEl.innerText = "Neue Karte freigeschaltet!";
                         statusEl.innerText = "Danke fürs Mitspielen in dieser Runde! Diese Karte gehört jetzt zu deinem Deck:";
