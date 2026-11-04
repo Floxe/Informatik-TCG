@@ -186,43 +186,300 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // KEINE STATS MEHR IM QUELLCODE! Nur Name, Bild, Kurzbeschreibung & Wiki-Link
         const allCards = {
-            turing: { 
-                name: "Alan Turing", 
-                img: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Alan_Turing_Aged_16.jpg", 
-                link: "https://de.wikipedia.org/wiki/Alan_Turing", 
-                desc: "Pionier der theoretischen Informatik und Kryptoanalyse; schuf das Konzept der Turingmaschine." 
+            chwarizmi: {
+                name: "Muhammad ibn Musa al-Chwarizmi",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/1983_CPA_5426_(1).png",
+                link: "https://de.wikipedia.org/wiki/Muhammad_ibn_Musa_al-Chwarizmi",
+                desc: "Persischer Universalgelehrter; Namensgeber des Begriffs Algorithmus und Wegbereiter der Algebra."
             },
-            allen: { 
-                name: "Frances E. Allen", 
-                img: "https://upload.wikimedia.org/wikipedia/commons/1/15/Allen_mg_2528-3750K-b.jpg", 
-                link: "https://de.wikipedia.org/wiki/Frances_E._Allen", 
-                desc: "Revolutionierte die Compiler-Optimierung und parallele Ausführung bei Hochleistungsrechnern." 
+            schickard: {
+                name: "Wilhelm Schickard",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Wilhelm_Schickard.jpg",
+                link: "https://de.wikipedia.org/wiki/Wilhelm_Schickard",
+                desc: "Konstruierte 1623 die erste urkundlich erwähnte mechanische Rechenmaschine."
             },
-            clarke: { 
-                name: "Edith Clarke", 
-                img: "https://upload.wikimedia.org/wikipedia/commons/9/92/Edith_Clarke.jpg", 
-                link: "https://de.wikipedia.org/wiki/Edith_Clarke", 
-                desc: "Erste Elektroingenieurin am MIT; erfand den grafischen Clarke-Rechner für komplexe Stromnetze." 
+            newton: {
+                name: "Isaac Newton",
+                img: "https://upload.wikimedia.org/wikipedia/commons/3/39/GodfreyKneller-IsaacNewton-1689.jpg",
+                link: "https://de.wikipedia.org/wiki/Isaac_Newton",
+                desc: "Schuf mit der Infinitesimalrechnung das mathematische Fundament für Physik-Engines und Computergrafik."
             },
-            ellis: { 
-                name: "Clarence Ellis", 
-                img: "https://siebelschool.illinois.edu/_sitemanager/viewphoto.aspx?id=9149&s=1200", 
-                link: "https://en.wikipedia.org/wiki/Clarence_Ellis_(computer_scientist)", 
-                desc: "Wegbereiter von Groupware und kollaborativen Systemen für gleichzeitiges Arbeiten am PC." 
+            leibniz: {
+                name: "Gottfried Wilhelm Leibniz",
+                img: "https://upload.wikimedia.org/wikipedia/commons/c/ce/Gottfried_Wilhelm_von_Leibniz.jpg",
+                link: "https://de.wikipedia.org/wiki/Gottfried_Wilhelm_Leibniz",
+                desc: "Dokumentierte das binäre Zahlensystem (0 und 1) als Grundlage der modernen Digitaltechnik."
             },
-            kare: { 
-                name: "Susan Kare", 
-                img: "https://upload.wikimedia.org/wikipedia/commons/8/88/SusanKare2019photo.jpg", 
-                link: "https://de.wikipedia.org/wiki/Susan_Kare", 
-                desc: "Prägte die visuelle Sprache früher grafischer Benutzeroberflächen durch ikonische Pixel-Art." 
+            babbage: {
+                name: "Charles Babbage",
+                img: "https://upload.wikimedia.org/wikipedia/commons/6/6b/Charles_Babbage_-_1860.jpg",
+                link: "https://de.wikipedia.org/wiki/Charles_Babbage",
+                desc: "Entwarf mit der Analytical Engine die Architektur des ersten frei programmierbaren Computers."
             },
-            hopper: { 
-                name: "Grace Hopper", 
-                img: "https://upload.wikimedia.org/wikipedia/commons/a/ad/Commodore_Grace_M._Hopper%2C_USN_%28covered%29.jpg", 
-                link: "https://de.wikipedia.org/wiki/Grace_Hopper", 
-                desc: "Entwickelte den ersten Compiler (A-0) und legte den Grundstein für maschinenunabhängige Sprachen." 
+            lovelace: {
+                name: "Ada Lovelace",
+                img: "https://upload.wikimedia.org/wikipedia/commons/a/a4/Ada_Lovelace_portrait.jpg",
+                link: "https://de.wikipedia.org/wiki/Ada_Lovelace",
+                desc: "Schrieb 1843 den ersten veröffentlichten Algorithmus für eine Rechenmaschine und erkannte deren universelles Potenzial."
+            },
+            boole: {
+                name: "George Boole",
+                img: "https://upload.wikimedia.org/wikipedia/commons/c/ce/George_Boole_color.jpg",
+                link: "https://de.wikipedia.org/wiki/George_Boole",
+                desc: "Begründer der Booleschen Algebra (AND, OR, NOT), auf der alle digitalen Logikschaltungen basieren."
+            },
+            hollerith: {
+                name: "Herman Hollerith",
+                img: "https://upload.wikimedia.org/wikipedia/commons/4/42/Herman_Hollerith.jpg",
+                link: "https://de.wikipedia.org/wiki/Herman_Hollerith",
+                desc: "Baute die erste elektromechanische Lochkarten-Tabelliermaschine und legte den Grundstein für IBM."
+            },
+            noether: {
+                name: "Emmy Noether",
+                img: "https://upload.wikimedia.org/wikipedia/commons/e/e5/Noether.jpg",
+                link: "https://de.wikipedia.org/wiki/Emmy_Noether",
+                desc: "Revolutionierte die abstrakte Algebra und prägte das strukturelle Fundament moderner Typsysteme."
+            },
+            clarke: {
+                name: "Edith Clarke",
+                img: "https://upload.wikimedia.org/wikipedia/commons/9/92/Edith_Clarke.jpg",
+                link: "https://de.wikipedia.org/wiki/Edith_Clarke",
+                desc: "Erste Elektroingenieurin am MIT; erfand den grafischen Clarke-Rechner für komplexe Stromnetze."
+            },
+            rhodes: {
+                name: "Ida Rhodes",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Ida_Rhodes.jpg",
+                link: "https://de.wikipedia.org/wiki/Ida_Rhodes",
+                desc: "Pionierin der maschinellen Sprachübersetzung; sagte bereits 1952 vernetzte Arbeitsplatzrechner voraus."
+            },
+            neumann: {
+                name: "John von Neumann",
+                img: "https://upload.wikimedia.org/wikipedia/commons/5/5e/JohnvonNeumann-LosAlamos.gif",
+                link: "https://de.wikipedia.org/wiki/John_von_Neumann",
+                desc: "Prägte die Von-Neumann-Architektur des speicherprogrammierten Computers, auf der fast alle heutigen Rechner basieren."
+            },
+            peter: {
+                name: "Rózsa Péter",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/RozsaPeter1975.jpg",
+                link: "https://de.wikipedia.org/wiki/R%C3%B3zsa_P%C3%A9ter",
+                desc: "Begründerin der Theorie der rekursiven Funktionen und deren Anwendung in Programmiersprachen."
+            },
+            hopper: {
+                name: "Grace Hopper",
+                img: "https://upload.wikimedia.org/wikipedia/commons/a/ad/Commodore_Grace_M._Hopper%2C_USN_%28covered%29.jpg",
+                link: "https://de.wikipedia.org/wiki/Grace_Hopper",
+                desc: "Entwickelte den ersten Compiler (A-0) und legte den Grundstein für maschinenunabhängige Sprachen."
+            },
+            vaughan: {
+                name: "Dorothy Vaughan",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Dorothy_Vaughan.jpg",
+                link: "https://de.wikipedia.org/wiki/Dorothy_Vaughan",
+                desc: "Leitete die West Computers der NASA und führte ihr Team erfolgreich in das Zeitalter der FORTRAN-Programmierung."
+            },
+            turing: {
+                name: "Alan Turing",
+                img: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Alan_Turing_Aged_16.jpg",
+                link: "https://de.wikipedia.org/wiki/Alan_Turing",
+                desc: "Pionier der theoretischen Informatik und Kryptoanalyse; schuf das Konzept der Turingmaschine."
+            },
+            keller: {
+                name: "Mary Keller",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/BVM_Sister_Mary_Kenneth_Keller.jpg",
+                link: "https://de.wikipedia.org/wiki/Mary_Kenneth_Keller",
+                desc: "Erste US-Promovierte in Informatik; setzte sich für den breiten Bildungseinsatz von BASIC ein."
+            },
+            lamarr: {
+                name: "Hedy Lamarr",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Hedy_Lamarr_in_The_Heavenly_Body_1944.jpg",
+                link: "https://de.wikipedia.org/wiki/Hedy_Lamarr",
+                desc: "Erfand 1942 das Frequenzsprungverfahren, eine Schlüsseltechnologie hinter Bluetooth und WLAN."
+            },
+            holberton: {
+                name: "Frances Holberton",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Betty_Holberton.jpg",
+                link: "https://de.wikipedia.org/wiki/Betty_Holberton",
+                desc: "ENIAC-Pionierin; entwickelte erste Sortier-Algorithmen und prägte das ergonomische Design des UNIVAC."
+            },
+            antonelli: {
+                name: "Kathleen Antonelli",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Kay_McNulty.jpg",
+                link: "https://de.wikipedia.org/wiki/Kathleen_Antonelli",
+                desc: "Gehörte zu den ersten sechs ENIAC-Programmiererinnen und erfand das Konzept der Subroutine am Röhrenrechner."
+            },
+            meltzer: {
+                name: "Marlyn Meltzer",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Marlyn_Wescoff.jpg",
+                link: "https://de.wikipedia.org/wiki/Marlyn_Meltzer",
+                desc: "Berechnete komplexe ballistische Flugbahnen als Teil des ersten ENIAC-Programmier-Teams."
+            },
+            spence: {
+                name: "Frances Spence",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Frances_Bilas.jpg",
+                link: "https://de.wikipedia.org/wiki/Frances_Spence",
+                desc: "ENIAC-Programmiererin der ersten Stunde; spezialisiert auf numerische Integration und Master-Routinen."
+            },
+            estrin: {
+                name: "Thelma Estrin",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Thelma_Estrin.jpg",
+                link: "https://de.wikipedia.org/wiki/Thelma_Estrin",
+                desc: "Verband Informatik und Hirnforschung als Wegbereiterin des Biomedical Engineering."
+            },
+            bartik: {
+                name: "Jean Bartik",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Jean_Jennings.jpg",
+                link: "https://de.wikipedia.org/wiki/Jean_Bartik",
+                desc: "Leitete den Umbau des ENIAC zum Speicherprogrammrechner und entwarf Software für BINAC und UNIVAC I."
+            },
+            teitelbaum: {
+                name: "Ruth Teitelbaum",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Two_women_operating_ENIAC.gif",
+                link: "https://de.wikipedia.org/wiki/Ruth_Teitelbaum",
+                desc: "ENIAC-Pionierin, die Differentialgleichungen auf dem Röhrenrechner implementierte und neue Programmierer ausbildete."
+            },
+            engelbart: {
+                name: "Douglas Engelbart",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Douglas_Engelbart_in_2008.jpg",
+                link: "https://de.wikipedia.org/wiki/Douglas_C._Engelbart",
+                desc: "Erfand die Computermaus und präsentierte 1968 Hypertext, Videokonferenzen und grafische Fenster."
+            },
+            hoover: {
+                name: "Erna Schneider Hoover",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/1ESS_Call_Store.jpg",
+                link: "https://de.wikipedia.org/wiki/Erna_Schneider_Hoover",
+                desc: "Erfand die computergesteuerte Telefonvermittlung und erhielt eines der ersten Softwarepatente der Geschichte."
+            },
+            sammet: {
+                name: "Jean Sammet",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Jean_E._Sammet.jpg",
+                link: "https://de.wikipedia.org/wiki/Jean_E._Sammet",
+                desc: "Entwickelte die Sprache FORMAC und prägte COBOL sowie die Spezifikation der Programmiersprache Ada."
+            },
+            windsor: {
+                name: "Edith Windsor",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Edie_Windsor_at_2013_NYC_Pride_Parade.jpg",
+                link: "https://de.wikipedia.org/wiki/Edith_Windsor",
+                desc: "Leitende IBM-Systemprogrammiererin für frühe Betriebssysteme und historische Bürgerrechts-Ikone."
+            },
+            goto: {
+                name: "Eiichi Goto",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Parametron.jpg",
+                link: "https://en.wikipedia.org/wiki/Eiichi_Goto",
+                desc: "Erfand das Parametron und konstruierte mit dem PC-1 den ersten robusten Digitalrechner Japans."
+            },
+            allen: {
+                name: "Frances E. Allen",
+                img: "https://upload.wikimedia.org/wikipedia/commons/1/15/Allen_mg_2528-3750K-b.jpg",
+                link: "https://de.wikipedia.org/wiki/Frances_E._Allen",
+                desc: "Revolutionierte die Compiler-Optimierung und parallele Ausführung bei Hochleistungsrechnern."
+            },
+            shirley: {
+                name: "Stephanie Shirley",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Stephanie_Shirley_2013.jpg",
+                link: "https://de.wikipedia.org/wiki/Stephanie_Shirley",
+                desc: "Gründete 1962 eines der ersten unabhängigen Softwarehäuser, das fast ausschließlich Frauen in Heimarbeit beschäftigte."
+            },
+            ulery: {
+                name: "Dana Ulery",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Dana_Ulery_NASA_JPL_1961.jpg",
+                link: "https://de.wikipedia.org/wiki/Dana_Ulery",
+                desc: "Erste Ingenieurin am NASA JPL; entwickelte Echtzeit-Tracking-Algorithmen für das Deep Space Network."
+            },
+            milhon: {
+                name: "Jude Milhon",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Jude_Milhon.jpg",
+                link: "https://de.wikipedia.org/wiki/Jude_Milhon",
+                desc: "Mitbegründerin der Cypherpunks; kämpfte für starke Verschlüsselung, Bürgerrechte und Frauen im Netz."
+            },
+            liskov: {
+                name: "Barbara Liskov",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Barbara_Liskov_MIT_computer_scientist_2010.jpg",
+                link: "https://de.wikipedia.org/wiki/Barbara_Liskov",
+                desc: "Turing-Preisträgerin; prägte mit Datenabstraktion und dem Liskovschen Substitutionsprinzip die moderne OOP."
+            },
+            ellis: {
+                name: "Clarence Ellis",
+                img: "https://siebelschool.illinois.edu/_sitemanager/viewphoto.aspx?id=9149&s=1200",
+                link: "https://en.wikipedia.org/wiki/Clarence_Ellis_(computer_scientist)",
+                desc: "Wegbereiter von Groupware und kollaborativen Systemen für gleichzeitiges Arbeiten am PC."
+            },
+            c_floyd: {
+                name: "Christiane Floyd",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Christiane_Floyd.jpg",
+                link: "https://de.wikipedia.org/wiki/Christiane_Floyd",
+                desc: "Erste Informatik-Professorin Deutschlands; stellte mit STEPS den Menschen ins Zentrum der Softwareentwicklung."
+            },
+            goldberg: {
+                name: "Adele Goldberg",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Adele_Goldberg_(2007).jpg",
+                link: "https://de.wikipedia.org/wiki/Adele_Goldberg_(Informatikerin)",
+                desc: "Entwickelte Smalltalk-80 und frühe grafische Benutzeroberflächen am Xerox PARC."
+            },
+            s_floyd: {
+                name: "Sally Floyd",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Internet_map_1024.jpg",
+                link: "https://de.wikipedia.org/wiki/Sally_Floyd",
+                desc: "Entwickelte Staukontroll-Algorithmen für TCP, die das stabile Wachstum des Internets ermöglichten."
+            },
+            perlman: {
+                name: "Radia Perlman",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Radia_Perlman_2009.jpg",
+                link: "https://de.wikipedia.org/wiki/Radia_Perlman",
+                desc: "Erfand das Spanning Tree Protocol (STP), das große Ethernet-Netzwerke ausfallsicher und skalierbar machte."
+            },
+            williams: {
+                name: "Roberta Williams",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Roberta_Williams_at_The_Game_Awards_2014.jpg",
+                link: "https://de.wikipedia.org/wiki/Roberta_Williams",
+                desc: "Begründete mit Mystery House und King's Quest das Genre der grafischen Computerspiel-Adventures."
+            },
+            kare: {
+                name: "Susan Kare",
+                img: "https://upload.wikimedia.org/wikipedia/commons/8/88/SusanKare2019photo.jpg",
+                link: "https://de.wikipedia.org/wiki/Susan_Kare",
+                desc: "Prägte die visuelle Sprache früher grafischer Benutzeroberflächen durch ikonische Pixel-Art."
+            },
+            jobs: {
+                name: "Steve Jobs",
+                img: "https://upload.wikimedia.org/wikipedia/commons/d/dc/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg",
+                link: "https://de.wikipedia.org/wiki/Steve_Jobs",
+                desc: "Prägte durch kompromisslosen Fokus auf Industriedesign und UX die Verbreitung von PCs und Smartphones."
+            },
+            gates: {
+                name: "Bill Gates",
+                img: "https://upload.wikimedia.org/wikipedia/commons/a/a8/Bill_Gates_2017_%28cropped%29.jpg",
+                link: "https://de.wikipedia.org/wiki/Bill_Gates",
+                desc: "Etablierte Standardsoftware als globalen Massenmarkt und brachte den PC mit MS-DOS und Windows in jeden Haushalt."
+            },
+            tardos: {
+                name: "Eva Tardos",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Eva_Tardos.jpg",
+                link: "https://de.wikipedia.org/wiki/Eva_Tardos",
+                desc: "Führende Forscherin der algorithmischen Spieltheorie und der Effizienz dezentraler Netzwerke."
+            },
+            wilson: {
+                name: "Sophie Wilson",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Sophie_Wilson_2012.jpg",
+                link: "https://de.wikipedia.org/wiki/Sophie_Wilson",
+                desc: "Entwickelte den Befehlssatz des ersten ARM-Prozessors, der heute nahezu jedes Smartphone antreibt."
+            },
+            asakawa: {
+                name: "Chieko Asakawa",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Chieko_Asakawa_in_2023.jpg",
+                link: "https://de.wikipedia.org/wiki/Chieko_Asakawa",
+                desc: "Machte das Web mit dem IBM Home Page Reader für Millionen blinde und sehbehinderte Menschen zugänglich."
+            },
+            goldwasser: {
+                name: "Shafi Goldwasser",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Shafi_Goldwasser_2012.jpg",
+                link: "https://de.wikipedia.org/wiki/Shafi_Goldwasser",
+                desc: "Schuf mit Zero-Knowledge-Beweisen und probabilistischer Verschlüsselung die Basis moderner Kryptographie."
+            },
+            mayer: {
+                name: "Marissa Mayer",
+                img: "https://commons.wikimedia.org/wiki/Special:FilePath/Marissa_Mayer_May_2014_(cropped).jpg",
+                link: "https://de.wikipedia.org/wiki/Marissa_Mayer",
+                desc: "Erste Ingenieurin bei Google; prägte das minimalistische Design der Google-Suche sowie Gmail und Google Maps."
             }
         };
 
