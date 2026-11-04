@@ -80,7 +80,8 @@
             background: var(--primary); color: white;
             border-radius: 50%; width: 26px; height: 26px;
             display: flex; justify-content: center; align-items: center;
-            text-decoration: none; font-size: 13px; font-weight: bold;
+            text-decoration: none; font-size: 14px; font-weight: bold;
+            font-family: Georgia, serif; font-style: italic;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;
         }
         
@@ -116,7 +117,7 @@
             
             <!-- Bestehendes Semester-Team reaktivieren -->
             <div id="saved-team-section" class="saved-team-box" style="display: none;">
-                <div style="font-size: 0.9em; margin-bottom: 8px;">🔄 <b>Dein Semester-Team weiterführen:</b><br><span id="saved-team-label"></span></div>
+                <div style="font-size: 0.9em; margin-bottom: 8px;"><b>Dein Semester-Team weiterführen:</b><br><span id="saved-team-label"></span></div>
                 <button class="btn" style="margin-top: 0; background: #2980b9;" onclick="reactivateSavedTeam()">Als Teamleader für diese Runde öffnen</button>
             </div>
 
@@ -130,13 +131,13 @@
             </div>
 
             <h3>Dein Kartendeck (<span id="deck-count">3</span>):</h3>
-            <p class="swipe-hint">↔️ Wische horizontal durch deine Karten</p>
+            <p class="swipe-hint">Wische horizontal durch deine Karten</p>
             <div class="cards-carousel" id="start-my-cards-grid"></div>
         </div>
 
         <!-- LEADER VIEW -->
         <div id="view-leader">
-            <div class="role-banner role-leader">👑 <b>Du bist Teamleader!</b> Tippe unten im Pool bis zu 5 Karten an.</div>
+            <div class="role-banner role-leader"><b>Du bist Teamleader!</b> Tippe unten im Pool bis zu 5 Karten an.</div>
             <h2>Team: <span id="leader-team-name"></span></h2>
             <p>PIN: <b id="team-pin-display" style="font-size: 1.5em; color: var(--primary);"></b></p>
             <p style="font-size: 0.85em;">Lass deine heutigen Sitznachbarn diesen Code scannen:</p>
@@ -147,7 +148,7 @@
             <div class="cards-carousel" id="leader-my-cards-grid"></div>
 
             <h3>Team-Karten-Pool (<span id="selected-count">0</span>/5 gewählt):</h3>
-            <p class="swipe-hint">↔️ Wische & tippe Karten an, um sie auszuwählen</p>
+            <p class="swipe-hint">Wische und tippe Karten an, um sie auszuwählen</p>
             <div class="cards-carousel" id="leader-pool-grid"></div>
             
             <div id="leader-error" class="error-toast"></div>
@@ -157,7 +158,7 @@
 
         <!-- MEMBER VIEW -->
         <div id="view-member">
-            <div class="role-banner role-member">👤 <b>Du bist Teammitglied.</b> Recherchiert gemeinsam! Der Leader wählt aus.</div>
+            <div class="role-banner role-member"><b>Du bist Teammitglied.</b> Recherchiert gemeinsam! Der Leader wählt aus.</div>
             <h2>Team: <span id="member-team-name"></span></h2>
             <p>PIN: <b id="member-team-pin" style="font-size: 1.5em; color: var(--primary);"></b></p>
             
@@ -166,7 +167,7 @@
             <div class="cards-carousel" id="member-my-cards-grid"></div>
 
             <h3>Karten-Pool des gesamten Teams:</h3>
-            <p class="swipe-hint">↔️ Wische durch alle verfügbaren Karten eures Teams</p>
+            <p class="swipe-hint">Wische durch alle verfügbaren Karten eures Teams</p>
             <div class="cards-carousel" id="member-pool-grid"></div>
         </div>
     </div>
@@ -489,7 +490,8 @@
         if (savedDeck) {
             myDeck = JSON.parse(savedDeck);
         } else {
-            let startKeys = ["turing", "allen", "clarke", "ellis", "kare"];
+            // Zieht 3 zufällige Karten aus dem gesamten Pool aller 49 Karten
+            let startKeys = Object.keys(allCards);
             for (let i = startKeys.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [startKeys[i], startKeys[j]] = [startKeys[j], startKeys[i]];
@@ -543,7 +545,7 @@
             }
         }
 
-        // Prüft streng, ob der Spieler in dieser Runde in einem Team war, das eingereicht hat!
+        // Prüft streng, ob der Spieler in dieser Runde in einem Team war, das eingereicht hat
         function verifyAndClaimReward(cardKey, roundParam, tokenParam) {
             document.getElementById("view-reward").style.display = "block";
             let titleEl = document.getElementById("reward-title");
@@ -551,7 +553,7 @@
             let myLastTeam = localStorage.getItem("lastActiveTeamPin");
 
             if (!myLastTeam || !roundParam || !tokenParam) {
-                titleEl.innerText = "❌ Nicht berechtigt";
+                titleEl.innerText = "Nicht berechtigt";
                 statusEl.innerText = "Du hast in dieser Runde an keinem Team teilgenommen.";
                 return;
             }
@@ -559,7 +561,7 @@
             db.ref('gameState').once('value').then(gsSnap => {
                 let gs = gsSnap.val() || {};
                 if (gs.status !== "ended" || gs.roundId !== roundParam || gs.rewardToken !== tokenParam) {
-                    titleEl.innerText = "⏳ Code abgelaufen";
+                    titleEl.innerText = "Code abgelaufen";
                     statusEl.innerText = "Dieser Belohnungs-Code ist nicht mehr aktiv.";
                     return;
                 }
@@ -571,11 +573,11 @@
                             myDeck.push(cardKey);
                             localStorage.setItem("myInformaticsTCGDeck", JSON.stringify(myDeck));
                         }
-                        titleEl.innerText = "🎉 Neue Karte freigeschaltet!";
+                        titleEl.innerText = "Neue Karte freigeschaltet!";
                         statusEl.innerText = "Danke fürs Mitspielen in dieser Runde! Diese Karte gehört jetzt zu deinem Deck:";
                         renderCard(cardKey, document.getElementById("reward-card-container"), false);
                     } else {
-                        titleEl.innerText = "❌ Keine Einreichung gefunden";
+                        titleEl.innerText = "Keine Einreichung gefunden";
                         statusEl.innerText = "Dein Team (" + myLastTeam + ") hat in dieser Runde leider keine Lösung eingereicht.";
                     }
                 });
@@ -670,7 +672,7 @@
             
             div.innerHTML = `
                 <div>
-                    <a href="${card.link}" target="_blank" class="info-btn" title="Wikipedia öffnen" onclick="event.stopPropagation()">ℹ️</a>
+                    <a href="${card.link}" target="_blank" class="info-btn" title="Wikipedia öffnen" onclick="event.stopPropagation()">i</a>
                     <div class="tcg-card-header">${card.name}</div>
                     <img src="${card.img}" alt="${card.name}">
                 </div>
@@ -718,7 +720,6 @@
             if(hasSubmitted || selectedCards.length === 0) return;
             hasSubmitted = true;
 
-            // Keine Stats-Berechnung mehr am Handy! Es werden nur die gespielten Karten-Keys übermittelt.
             db.ref(`leaderboard/${currentRoundId}/${currentRoom}`).set({
                 teamPin: currentRoom,
                 teamName: teamName,
@@ -726,7 +727,6 @@
                 timestamp: Date.now()
             });
 
-            // Vermerken, dass dieses Team in dieser Runde teilgenommen hat (für Belohnungs-Check!)
             db.ref(`rooms/${currentRoom}/submittedRounds/${currentRoundId}`).set(true);
             
             document.getElementById("submit-btn").style.display = "none";
