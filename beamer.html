@@ -54,12 +54,12 @@
 </head>
 <body>
 
-    <!-- ADMIN LOGIN OVERLAY (Nur Lesezugriff, kein Upload-Feld mehr) -->
+    <!-- ADMIN LOGIN OVERLAY (Reiner Lesezugriff, kein Eingabefeld für Datensätze) -->
     <div id="admin-overlay">
         <div class="login-box">
             <h2>Beamer Admin-Login</h2>
             <p style="font-size: 0.9em; color: #666;">Gib dein Admin-Passwort ein, um die geheimen Kartenwerte aus Firebase zu laden.</p>
-            <input type="password" id="admin-pass" placeholder="Admin-Passwort">
+            <input type="password" id="admin-pass" maxlength="64" autocomplete="off" placeholder="Admin-Passwort">
             <button onclick="loginAdmin()">Entsperren</button>
             <div id="login-error" class="error-msg"></div>
         </div>
@@ -140,6 +140,23 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // Schutz gegen HTML-/Script-Injection bei externen Texten
+        function escapeHtml(str) {
+            if (typeof str !== "string") return "";
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Entfernt verbotene Firebase-Pfadzeichen im Passwort-Feld
+        document.getElementById("admin-pass").addEventListener("input", function() {
+            const clean = this.value.replace(/[.$#[\]/]/g, "").slice(0, 64);
+            if (this.value !== clean) this.value = clean;
+        });
+
         const attributes = ["Theorie", "Software", "Hardware", "Design", "Vision"];
         const cardNames = {
             chwarizmi: "Muhammad ibn Musa al-Chwarizmi",
@@ -197,6 +214,7 @@
         let roundsData = {};
         let currentRoundId = "round1";
         let adminPass = "";
+        let isAdminUnlocked = false;
 
         let submissions = [];
         let semesterScores = {};
@@ -215,14 +233,14 @@
         }
 
         function adjustTimer(mins) {
-            if (timerInterval) return; 
+            if (!isAdminUnlocked || timerInterval) return; 
             timerSeconds += mins * 60;
             if (timerSeconds < 0) timerSeconds = 0;
             updateTimerDisplay();
         }
 
         function startTimer() {
-            if (timerInterval || timerSeconds <= 0) return; 
+            if (!isAdminUnlocked || timerInterval || timerSeconds <= 0) return; 
             document.getElementById("start-timer-btn").disabled = true;
             timerInterval = setInterval(() => {
                 timerSeconds--;
@@ -242,7 +260,7 @@
 
         // --- Admin Login & Tresor-Abfrage (Nur Lesezugriff) ---
         function loginAdmin() {
-            adminPass = document.getElementById("admin-pass").value.trim();
+            adminPass = document.getElementById("admin-pass").value.replace(/[.$#[\]/]/g, "").trim().slice(0, 64);
             let errEl = document.getElementById("login-error");
             errEl.innerText = "";
             if (!adminPass) return;
@@ -250,13 +268,14 @@
             db.ref('admin_secrets/' + adminPass).once('value').then(snap => {
                 if (snap.exists()) {
                     let data = snap.val();
-                    secretCardStats = data.cardStats;
-                    roundsData = data.rounds;
+                    secretCardStats = data.cardStats || {};
+                    roundsData = data.rounds || {};
+                    isAdminUnlocked = true;
                     unlockBeamer();
                 } else {
                     errEl.innerText = "Falsches Passwort oder keine Daten im Backend hinterlegt.";
                 }
-            }).catch(err => {
+            }).catch(() => {
                 errEl.innerText = "Zugriff verweigert.";
             });
         }
@@ -268,7 +287,7 @@
             for (let rKey in roundsData) {
                 let opt = document.createElement("option");
                 opt.value = rKey;
-                opt.innerText = roundsData[rKey].title;
+                opt.textContent = roundsData[rKey].title;
                 select.appendChild(opt);
             }
 
@@ -281,6 +300,7 @@
         }
 
         function activateSelectedRound() {
+            if (!isAdminUnlocked) return;
             currentRoundId = document.getElementById("round-select").value;
             let r = roundsData[currentRoundId];
             if (!r) return;
@@ -293,10 +313,10 @@
             document.getElementById("problem-view").style.display = "block";
             document.getElementById("reward-view").style.display = "none";
 
-            document.getElementById("prob-title").innerText = r.title;
-            document.getElementById("prob-desc").innerText = r.desc;
+            document.getElementById("prob-title").textContent = r.title;
+            document.getElementById("prob-desc").textContent = r.desc;
             let t = r.targetStats;
-            document.getElementById("prob-targets").innerText = 
+            document.getElementById("prob-targets").textContent = 
                 `${t.Theorie} Theorie | ${t.Software} Software | ${t.Hardware} Hardware | ${t.Design} Design | ${t.Vision} Vision`;
 
             db.ref('gameState').set({
@@ -325,7 +345,8 @@
                     let data = allSubs[teamPin];
                     let teamStats = { Theorie: 0, Software: 0, Hardware: 0, Design: 0, Vision: 0 };
                     
-                    (data.playedCards || []).forEach(cardKey => {
+                    let cardsList = Array.isArray(data.playedCards) ? data.playedCards.slice(0, 5) : [];
+                    cardsList.forEach(cardKey => {
                         let s = secretCardStats[cardKey];
                         if (s) {
                             attributes.forEach(a => { teamStats[a] += s[a]; });
@@ -338,10 +359,10 @@
                     });
 
                     submissions.push({
-                        teamPin: teamPin,
-                        teamName: data.teamName || ("Team " + teamPin),
+                        teamPin: String(teamPin).slice(0, 4),
+                        teamName: String(data.teamName || ("Team " + teamPin)).slice(0, 25),
                         error: totalError,
-                        playedCards: data.playedCards || []
+                        playedCards: cardsList
                     });
                 }
                 if (!showSemesterLb) renderLeaderboard();
@@ -349,6 +370,7 @@
         }
 
         function endRound() {
+            if (!isAdminUnlocked) return;
             if (timerInterval) {
                 clearInterval(timerInterval);
                 timerInterval = null;
@@ -373,17 +395,17 @@
                     if (existing.lastRoundAdded !== currentRoundId) {
                         db.ref('semesterScores/' + sub.teamPin).set({
                             teamName: sub.teamName,
-                            totalPoints: existing.totalPoints + pointsEarned,
-                            roundsPlayed: existing.roundsPlayed + 1,
+                            totalPoints: (Number(existing.totalPoints) || 0) + pointsEarned,
+                            roundsPlayed: (Number(existing.roundsPlayed) || 0) + 1,
                             lastRoundAdded: currentRoundId
                         });
                     }
                 });
             });
 
-            document.getElementById("reward-name").innerText = "Belohnung: " + r.rewardName;
+            document.getElementById("reward-name").textContent = "Belohnung: " + r.rewardName;
             document.getElementById("reward-qrcode").innerHTML = ""; 
-            let rewardUrl = `https://floxe.github.io/Informatik-TCG/student.html?newcard=${r.rewardCard}&round=${currentRoundId}&token=${token}`;
+            let rewardUrl = `https://floxe.github.io/Informatik-TCG/student.html?newcard=${encodeURIComponent(r.rewardCard)}&round=${encodeURIComponent(currentRoundId)}&token=${encodeURIComponent(token)}`;
             new QRCode(document.getElementById("reward-qrcode"), {
                 text: rewardUrl,
                 width: 240,
@@ -392,6 +414,7 @@
         }
 
         function toggleLeaderboardMode() {
+            if (!isAdminUnlocked) return;
             showSemesterLb = !showSemesterLb;
             let btn = document.getElementById("toggle-lb-btn");
             let title = document.getElementById("lb-title");
@@ -418,7 +441,7 @@
             let container = document.getElementById("lb-content");
             if (showSemesterLb) {
                 let list = Object.keys(semesterScores).map(pin => semesterScores[pin]);
-                list.sort((a, b) => b.totalPoints - a.totalPoints);
+                list.sort((a, b) => (Number(b.totalPoints) || 0) - (Number(a.totalPoints) || 0));
                 if (list.length === 0) {
                     container.innerHTML = `<p style="text-align: center; color: #7f8c8d;">Noch keine Semester-Punkte vorhanden.</p>`;
                     return;
@@ -426,10 +449,13 @@
                 let html = "";
                 list.forEach((entry, idx) => {
                     let rankClass = idx === 0 ? "rank-1" : "";
+                    let safeName = escapeHtml(String(entry.teamName || "Team"));
+                    let safeRounds = Number(entry.roundsPlayed) || 0;
+                    let safePoints = Number(entry.totalPoints) || 0;
                     html += `<div class="leaderboard-item">
                                 <div class="leaderboard-row ${rankClass}">
-                                    <span>#${idx + 1} - <b>${entry.teamName}</b> <small>(${entry.roundsPlayed} Runden)</small></span>
-                                    <span>${entry.totalPoints} Punkte</span>
+                                    <span>#${idx + 1} - <b>${safeName}</b> <small>(${safeRounds} Runden)</small></span>
+                                    <span>${safePoints} Punkte</span>
                                 </div>
                              </div>`;
                 });
@@ -447,14 +473,17 @@
                 let rankClass = index === 0 ? "rank-1" : "";
                 let cardsHtml = "";
                 sub.playedCards.forEach(cardKey => {
-                    let cName = cardNames[cardKey] || cardKey;
+                    let cName = escapeHtml(cardNames[cardKey] || String(cardKey));
                     cardsHtml += `<span class="played-card">${cName}</span>`;
                 });
 
+                let safeTeamName = escapeHtml(sub.teamName);
+                let safeError = Number(sub.error) || 0;
+
                 html += `<div class="leaderboard-item" onclick="toggleDetails(${index})">
                             <div class="leaderboard-row ${rankClass}">
-                                <span>#${index + 1} - <b>${sub.teamName}</b></span>
-                                <span>${sub.error} Fehlerpunkte ▾</span>
+                                <span>#${index + 1} - <b>${safeTeamName}</b></span>
+                                <span>${safeError} Fehlerpunkte ▾</span>
                             </div>
                             <div class="leaderboard-details" id="details-${index}" style="display: none;">
                                 <div><strong>Gespielte Karten:</strong></div>
