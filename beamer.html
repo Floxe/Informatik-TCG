@@ -11,13 +11,13 @@
         :root { --primary: #2c3e50; --secondary: #18bc9c; --bg: #ecf0f1; --text: #333; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); padding: 25px 40px; margin: 0; }
         
-        /* Login Overlay */
+        /* Admin Login Overlay */
         #admin-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.96); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .login-box { background: white; padding: 30px; border-radius: 12px; width: 420px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .login-box input { width: calc(100% - 24px); padding: 12px; margin: 10px 0; font-size: 1em; border: 1px solid #ccc; border-radius: 6px; }
         .login-box button { background: var(--secondary); color: white; border: none; padding: 12px 20px; font-size: 1.1em; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
 
-        /* Steuerleiste */
+        /* Admin Top-Bar */
         .admin-bar { display: flex; justify-content: space-between; align-items: center; background: #1a252f; color: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95em; }
         .admin-bar select, .admin-bar button { padding: 8px 12px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; margin-left: 8px; }
         .btn-activate { background: var(--secondary); color: white; }
@@ -39,4 +39,460 @@
         .problem-box { background: var(--primary); color: white; padding: 30px; border-radius: 10px; font-size: 1.4em; text-align: center; height: fit-content; }
         .reward-box { background: var(--secondary); color: white; padding: 30px; border-radius: 10px; font-size: 1.4em; text-align: center; height: fit-content; display: none; }
         
-        .leaderboard { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6
+        .leaderboard { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .leaderboard-item { border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
+        .leaderboard-item:hover { background-color: #f1f2f6; }
+        .leaderboard-row { display: flex; justify-content: space-between; padding: 15px; font-size: 1.2em; }
+        .rank-1 { background-color: #f1c40f !important; font-weight: bold; color: black; }
+        
+        .leaderboard-details { padding: 15px; background-color: #f8f9fa; font-size: 0.9em; color: #555; border-top: 1px dashed #ccc; }
+        .played-card { display: inline-block; background: #e0e6ed; color: #2c3e50; padding: 5px 10px; margin: 5px; border-radius: 5px; font-weight: bold; }
+        
+        .btn-end { background-color: #e74c3c; color: white; border: none; padding: 15px 20px; font-size: 0.7em; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 20px; width: 100%; }
+        .error-msg { color: #e74c3c; font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- ADMIN LOGIN OVERLAY (Reiner Lesezugriff, kein Eingabefeld für Datensätze) -->
+    <div id="admin-overlay">
+        <div class="login-box">
+            <h2>Beamer Admin-Login</h2>
+            <p style="font-size: 0.9em; color: #666;">Gib dein Admin-Passwort ein, um die geheimen Kartenwerte aus Firebase zu laden.</p>
+            <input type="password" id="admin-pass" maxlength="64" autocomplete="off" placeholder="Admin-Passwort">
+            <button onclick="loginAdmin()">Entsperren</button>
+            <div id="login-error" class="error-msg"></div>
+        </div>
+    </div>
+
+    <!-- ADMIN STEUERLEISTE -->
+    <div class="admin-bar">
+        <div>
+            <span><b>Runden-Steuerung:</b></span>
+            <select id="round-select"></select>
+            <button class="btn-activate" onclick="activateSelectedRound()">Runde im Hörsaal starten</button>
+        </div>
+        <div>
+            <button class="btn-toggle-lb" id="toggle-lb-btn" onclick="toggleLeaderboardMode()">Zeige: Semester-Leaderboard</button>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="timer-box" id="timer-box">
+            <div class="timer-display" id="time-display">15:00</div>
+            <div class="timer-controls">
+                <button onclick="adjustTimer(-1)">-1m</button>
+                <button class="btn-start" onclick="startTimer()" id="start-timer-btn">Start</button>
+                <button onclick="adjustTimer(1)">+1m</button>
+            </div>
+        </div>
+
+        <div class="header-text">
+            <h1>Informatics TCG</h1>
+            <p>Scanne den Code oder gehe auf<br><b>floxe.github.io/Informatik-TCG/student.html</b><br>um ein Team zu gründen!</p>
+        </div>
+        
+        <div id="main-qrcode"></div>
+    </div>
+
+    <div class="layout">
+        <div>
+            <div class="problem-box" id="problem-view">
+                <h2 id="prob-title">Bitte Runde starten...</h2>
+                <p id="prob-desc"></p>
+                <hr>
+                <p style="font-size: 0.85em; color: #bdc3c7;">Benötigte Expertise:<br>
+                <span id="prob-targets"></span></p>
+                <p style="font-size: 0.75em; margin-top: 20px;">Jedes Team darf bis zu <b>5 Karten</b> kombinieren. Zu viel oder zu wenig gibt Fehlerpunkte!</p>
+                
+                <button class="btn-end" onclick="endRound()">RUNDE BEENDEN & BELOHNUNG ZEIGEN</button>
+            </div>
+
+            <div class="reward-box" id="reward-view">
+                <h2>Runde beendet!</h2>
+                <p>Nur Teams, die in dieser Runde eine Lösung eingereicht haben, können diesen Code scannen:</p>
+                <div id="reward-qrcode" style="display: flex; justify-content: center; margin: 20px 0; background: white; padding: 15px; border-radius: 10px; width: fit-content; margin-left: auto; margin-right: auto;"></div>
+                <h3 id="reward-name">Belohnung</h3>
+            </div>
+        </div>
+
+        <div class="leaderboard" id="leaderboard">
+            <h2 style="text-align: center;" id="lb-title">Live Runden-Leaderboard</h2>
+            <p style="text-align: center; font-size: 0.8em; margin-top: -10px; color: #7f8c8d;" id="lb-subtitle">(Klicke auf ein Team, um die gespielten Karten zu sehen)</p>
+            <div id="lb-content">
+                <p style="text-align: center; color: #7f8c8d;">Warte auf Einreichungen...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyHK3ffOccGryw03jQphYXMpP3tC6Xgpk",
+            authDomain: "informatik-tcg.firebaseapp.com",
+            projectId: "informatik-tcg",
+            databaseURL: "https://informatik-tcg-default-rtdb.europe-west1.firebasedatabase.app", 
+            storageBucket: "informatik-tcg.firebasestorage.app",
+            messagingSenderId: "212430356994",
+            appId: "1:212430356994:web:9a3947fbe34701bfbcdd1b",
+            measurementId: "G-J8YP14HRVM"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Schutz gegen HTML-/Script-Injection bei externen Texten
+        function escapeHtml(str) {
+            if (typeof str !== "string") return "";
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Entfernt verbotene Firebase-Pfadzeichen im Passwort-Feld
+        document.getElementById("admin-pass").addEventListener("input", function() {
+            const clean = this.value.replace(/[.$#[\]/]/g, "").slice(0, 64);
+            if (this.value !== clean) this.value = clean;
+        });
+
+        const attributes = ["Theorie", "Software", "Hardware", "Design", "Vision"];
+        const cardNames = {
+            chwarizmi: "Muhammad ibn Musa al-Chwarizmi",
+            schickard: "Wilhelm Schickard",
+            newton: "Isaac Newton",
+            leibniz: "Gottfried Wilhelm Leibniz",
+            babbage: "Charles Babbage",
+            lovelace: "Ada Lovelace",
+            boole: "George Boole",
+            hollerith: "Herman Hollerith",
+            noether: "Emmy Noether",
+            clarke: "Edith Clarke",
+            rhodes: "Ida Rhodes",
+            neumann: "John von Neumann",
+            peter: "Rózsa Péter",
+            hopper: "Grace Hopper",
+            vaughan: "Dorothy Vaughan",
+            turing: "Alan Turing",
+            keller: "Mary Keller",
+            lamarr: "Hedy Lamarr",
+            holberton: "Frances Holberton",
+            antonelli: "Kathleen Antonelli",
+            meltzer: "Marlyn Meltzer",
+            spence: "Frances Spence",
+            estrin: "Thelma Estrin",
+            bartik: "Jean Bartik",
+            teitelbaum: "Ruth Teitelbaum",
+            engelbart: "Douglas Engelbart",
+            hoover: "Erna Schneider Hoover",
+            sammet: "Jean Sammet",
+            windsor: "Edith Windsor",
+            goto: "Eiichi Goto",
+            allen: "Frances E. Allen",
+            shirley: "Stephanie Shirley",
+            ulery: "Dana Ulery",
+            milhon: "Jude Milhon",
+            liskov: "Barbara Liskov",
+            ellis: "Clarence Ellis",
+            c_floyd: "Christiane Floyd",
+            goldberg: "Adele Goldberg",
+            s_floyd: "Sally Floyd",
+            perlman: "Radia Perlman",
+            williams: "Roberta Williams",
+            kare: "Susan Kare",
+            jobs: "Steve Jobs",
+            gates: "Bill Gates",
+            tardos: "Eva Tardos",
+            wilson: "Sophie Wilson",
+            asakawa: "Chieko Asakawa",
+            goldwasser: "Shafi Goldwasser",
+            mayer: "Marissa Mayer"
+        };
+
+        let secretCardStats = {};
+        let roundsData = {};
+        let currentRoundId = "round1";
+        let adminPass = "";
+        let isAdminUnlocked = false;
+
+        let submissions = [];
+        let semesterScores = {};
+        let showSemesterLb = false;
+        let roundListenerRef = null;
+
+        // --- Timer Logik ---
+        let timerSeconds = 15 * 60;
+        let timerInterval = null;
+
+        function updateTimerDisplay() {
+            let m = Math.floor(timerSeconds / 60);
+            let s = timerSeconds % 60;
+            document.getElementById("time-display").innerText = 
+                (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+        }
+
+        function adjustTimer(mins) {
+            if (!isAdminUnlocked || timerInterval) return; 
+            timerSeconds += mins * 60;
+            if (timerSeconds < 0) timerSeconds = 0;
+            updateTimerDisplay();
+        }
+
+        function startTimer() {
+            if (!isAdminUnlocked || timerInterval || timerSeconds <= 0) return; 
+            document.getElementById("start-timer-btn").disabled = true;
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                updateTimerDisplay();
+                if (timerSeconds <= 0) endRound();
+            }, 1000);
+        }
+
+        window.onload = () => {
+            updateTimerDisplay();
+            new QRCode(document.getElementById("main-qrcode"), {
+                text: "https://floxe.github.io/Informatik-TCG/student.html",
+                width: 120,
+                height: 120
+            });
+        };
+
+        // --- Admin Login & Tresor-Abfrage (Nur Lesezugriff) ---
+        function loginAdmin() {
+            adminPass = document.getElementById("admin-pass").value.replace(/[.$#[\]/]/g, "").trim().slice(0, 64);
+            let errEl = document.getElementById("login-error");
+            errEl.innerText = "";
+            if (!adminPass) return;
+
+            db.ref('admin_secrets/' + adminPass).once('value').then(snap => {
+                if (snap.exists()) {
+                    let data = snap.val();
+                    secretCardStats = data.cardStats || {};
+                    roundsData = data.rounds || {};
+                    isAdminUnlocked = true;
+                    unlockBeamer();
+                } else {
+                    errEl.innerText = "Falsches Passwort oder keine Daten im Backend hinterlegt.";
+                }
+            }).catch(() => {
+                errEl.innerText = "Zugriff verweigert.";
+            });
+        }
+
+        function unlockBeamer() {
+            document.getElementById("admin-overlay").style.display = "none";
+            let select = document.getElementById("round-select");
+            select.innerHTML = "";
+            for (let rKey in roundsData) {
+                let opt = document.createElement("option");
+                opt.value = rKey;
+                opt.textContent = roundsData[rKey].title;
+                select.appendChild(opt);
+            }
+
+            db.ref('semesterScores').on('value', snap => {
+                semesterScores = snap.val() || {};
+                if (showSemesterLb) renderLeaderboard();
+            });
+
+            activateSelectedRound();
+        }
+
+        function activateSelectedRound() {
+            if (!isAdminUnlocked) return;
+            currentRoundId = document.getElementById("round-select").value;
+            let r = roundsData[currentRoundId];
+            if (!r) return;
+
+            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            timerSeconds = 15 * 60;
+            updateTimerDisplay();
+            document.getElementById("start-timer-btn").disabled = false;
+            document.getElementById("start-timer-btn").innerText = "Start";
+            document.getElementById("problem-view").style.display = "block";
+            document.getElementById("reward-view").style.display = "none";
+
+            document.getElementById("prob-title").textContent = r.title;
+            document.getElementById("prob-desc").textContent = r.desc;
+            let t = r.targetStats;
+            document.getElementById("prob-targets").textContent = 
+                `${t.Theorie} Theorie | ${t.Software} Software | ${t.Hardware} Hardware | ${t.Design} Design | ${t.Vision} Vision`;
+
+            db.ref('gameState').set({
+                roundId: currentRoundId,
+                roundTitle: r.title,
+                status: "active",
+                rewardToken: null,
+                rewardCard: null
+            });
+
+            listenToRoundSubmissions(currentRoundId);
+        }
+
+        function listenToRoundSubmissions(roundId) {
+            if (roundListenerRef) roundListenerRef.off();
+            submissions = [];
+            renderLeaderboard();
+
+            roundListenerRef = db.ref('leaderboard/' + roundId);
+            roundListenerRef.on('value', (snapshot) => {
+                submissions = [];
+                let allSubs = snapshot.val() || {};
+                let targetStats = roundsData[roundId].targetStats;
+
+                for (let teamPin in allSubs) {
+                    let data = allSubs[teamPin];
+                    let teamStats = { Theorie: 0, Software: 0, Hardware: 0, Design: 0, Vision: 0 };
+                    
+                    let cardsList = Array.isArray(data.playedCards) ? data.playedCards.slice(0, 5) : [];
+                    cardsList.forEach(cardKey => {
+                        let s = secretCardStats[cardKey];
+                        if (s) {
+                            attributes.forEach(a => { teamStats[a] += s[a]; });
+                        }
+                    });
+
+                    let totalError = 0;
+                    attributes.forEach(a => {
+                        totalError += Math.abs(teamStats[a] - targetStats[a]);
+                    });
+
+                    submissions.push({
+                        teamPin: String(teamPin).slice(0, 4),
+                        teamName: String(data.teamName || ("Team " + teamPin)).slice(0, 25),
+                        error: totalError,
+                        playedCards: cardsList
+                    });
+                }
+                if (!showSemesterLb) renderLeaderboard();
+            });
+        }
+
+        function endRound() {
+            if (!isAdminUnlocked) return;
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            document.getElementById("start-timer-btn").innerText = "Beendet";
+            document.getElementById("problem-view").style.display = "none";
+            document.getElementById("reward-view").style.display = "block";
+            
+            let r = roundsData[currentRoundId];
+            let token = Math.random().toString(36).substring(2, 10);
+
+            db.ref('gameState').update({
+                status: "ended",
+                rewardToken: token,
+                rewardCard: r.rewardCard
+            });
+
+            submissions.forEach(sub => {
+                let pointsEarned = Math.max(10, 100 - sub.error);
+                db.ref('semesterScores/' + sub.teamPin).once('value').then(snap => {
+                    let existing = snap.val() || { teamName: sub.teamName, totalPoints: 0, roundsPlayed: 0, lastRoundAdded: "" };
+                    if (existing.lastRoundAdded !== currentRoundId) {
+                        db.ref('semesterScores/' + sub.teamPin).set({
+                            teamName: sub.teamName,
+                            totalPoints: (Number(existing.totalPoints) || 0) + pointsEarned,
+                            roundsPlayed: (Number(existing.roundsPlayed) || 0) + 1,
+                            lastRoundAdded: currentRoundId
+                        });
+                    }
+                });
+            });
+
+            document.getElementById("reward-name").textContent = "Belohnung: " + r.rewardName;
+            document.getElementById("reward-qrcode").innerHTML = ""; 
+            let rewardUrl = `https://floxe.github.io/Informatik-TCG/student.html?newcard=${encodeURIComponent(r.rewardCard)}&round=${encodeURIComponent(currentRoundId)}&token=${encodeURIComponent(token)}`;
+            new QRCode(document.getElementById("reward-qrcode"), {
+                text: rewardUrl,
+                width: 240,
+                height: 240
+            });
+        }
+
+        function toggleLeaderboardMode() {
+            if (!isAdminUnlocked) return;
+            showSemesterLb = !showSemesterLb;
+            let btn = document.getElementById("toggle-lb-btn");
+            let title = document.getElementById("lb-title");
+            let sub = document.getElementById("lb-subtitle");
+
+            if (showSemesterLb) {
+                btn.innerText = "Zeige: Runden-Leaderboard";
+                title.innerText = "Globales Semester-Leaderboard";
+                sub.innerText = "(Gesamtpunkte aller bisherigen Vorlesungs-Runden)";
+            } else {
+                btn.innerText = "Zeige: Semester-Leaderboard";
+                title.innerText = "Live Runden-Leaderboard";
+                sub.innerText = "(Klicke auf ein Team, um die gespielten Karten zu sehen)";
+            }
+            renderLeaderboard();
+        }
+
+        function toggleDetails(index) {
+            let el = document.getElementById("details-" + index);
+            if (el) el.style.display = (el.style.display === "none") ? "block" : "none";
+        }
+
+        function renderLeaderboard() {
+            let container = document.getElementById("lb-content");
+            if (showSemesterLb) {
+                let list = Object.keys(semesterScores).map(pin => semesterScores[pin]);
+                list.sort((a, b) => (Number(b.totalPoints) || 0) - (Number(a.totalPoints) || 0));
+                if (list.length === 0) {
+                    container.innerHTML = `<p style="text-align: center; color: #7f8c8d;">Noch keine Semester-Punkte vorhanden.</p>`;
+                    return;
+                }
+                let html = "";
+                list.forEach((entry, idx) => {
+                    let rankClass = idx === 0 ? "rank-1" : "";
+                    let safeName = escapeHtml(String(entry.teamName || "Team"));
+                    let safeRounds = Number(entry.roundsPlayed) || 0;
+                    let safePoints = Number(entry.totalPoints) || 0;
+                    html += `<div class="leaderboard-item">
+                                <div class="leaderboard-row ${rankClass}">
+                                    <span>#${idx + 1} - <b>${safeName}</b> <small>(${safeRounds} Runden)</small></span>
+                                    <span>${safePoints} Punkte</span>
+                                </div>
+                             </div>`;
+                });
+                container.innerHTML = html;
+                return;
+            }
+
+            submissions.sort((a, b) => a.error - b.error);
+            if (submissions.length === 0) {
+                container.innerHTML = `<p style="text-align: center; color: #7f8c8d;">Warte auf Einreichungen...</p>`;
+                return;
+            }
+            let html = "";
+            submissions.forEach((sub, index) => {
+                let rankClass = index === 0 ? "rank-1" : "";
+                let cardsHtml = "";
+                sub.playedCards.forEach(cardKey => {
+                    let cName = escapeHtml(cardNames[cardKey] || String(cardKey));
+                    cardsHtml += `<span class="played-card">${cName}</span>`;
+                });
+
+                let safeTeamName = escapeHtml(sub.teamName);
+                let safeError = Number(sub.error) || 0;
+
+                html += `<div class="leaderboard-item" onclick="toggleDetails(${index})">
+                            <div class="leaderboard-row ${rankClass}">
+                                <span>#${index + 1} - <b>${safeTeamName}</b></span>
+                                <span>${safeError} Fehlerpunkte ▾</span>
+                            </div>
+                            <div class="leaderboard-details" id="details-${index}" style="display: none;">
+                                <div><strong>Gespielte Karten:</strong></div>
+                                <div style="margin-top: 10px;">${cardsHtml}</div>
+                            </div>
+                         </div>`;
+            });
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
