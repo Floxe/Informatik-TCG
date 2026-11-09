@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informatics TCG - Student</title>
+    <title>Informatics TCG - Spielansicht</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -278,7 +278,7 @@
                 <div style="font-size: 0.9em; margin-bottom: 8px;">
                     <b>Euer Semester-Team weiterführen:</b><br>
                     <span id="saved-team-label"></span><br>
-                    <small style="color: #475569;">(Ein Mitglied reicht aus, um das Team für die heutige Runde zu öffnen)</small>
+                    <small style="color: #475569;">(Eine Person aus dem bisherigen Team reicht aus, um es für die aktuelle Runde zu öffnen)</small>
                 </div>
                 <button class="btn" style="margin-top: 0; background: #2563eb;" onclick="reactivateSavedTeam()">Team für aktuelle Runde reaktivieren</button>
             </div>
@@ -299,10 +299,10 @@
 
         <!-- LEADER VIEW -->
         <div id="view-leader">
-            <div class="role-banner role-leader"><b>Du bist Teamleader!</b> Drehe den Team-Pool und tippe die vorderste Karte an, um bis zu 5 Karten auszuwählen.</div>
+            <div class="role-banner role-leader"><b>Du übernimmst die Teamleitung!</b> Drehe den Team-Pool und tippe die vorderste Karte an, um bis zu 5 Karten auszuwählen.</div>
             <h2>Team: <span id="leader-team-name"></span></h2>
             <p>PIN: <b id="team-pin-display" style="font-size: 1.5em; color: var(--primary);"></b></p>
-            <p style="font-size: 0.85em;">Lass deine heutigen Sitznachbarn diesen Code scannen:</p>
+            <p style="font-size: 0.85em;">Lass die anderen Personen in deinem Team diesen Code scannen:</p>
             <div id="qrcode"></div>
             
             <hr style="margin: 20px 0;">
@@ -320,7 +320,7 @@
 
         <!-- MEMBER VIEW -->
         <div id="view-member">
-            <div class="role-banner role-member"><b>Du bist Teammitglied.</b> Recherchiert gemeinsam! Der Teamleader wählt die Karten aus.</div>
+            <div class="role-banner role-member"><b>Du bist im Team.</b> Recherchiert gemeinsam! Die Teamleitung wählt die Karten aus.</div>
             <h2>Team: <span id="member-team-name"></span></h2>
             <p>PIN: <b id="member-team-pin" style="font-size: 1.5em; color: var(--primary);"></b></p>
             
@@ -545,7 +545,7 @@
                 img: "https://commons.wikimedia.org/wiki/Special:FilePath/Two_women_operating_ENIAC.gif",
                 pos: "50% 50%",
                 link: "https://de.wikipedia.org/wiki/Ruth_Teitelbaum",
-                desc: "ENIAC-Pionierin, die Differentialgleichungen auf dem Röhrenrechner implementierte und neue Programmierer ausbildete."
+                desc: "ENIAC-Pionierin, die Differentialgleichungen auf dem Röhrenrechner implementierte und neue Fachkräfte in der Programmierung ausbildete."
             },
             engelbart: {
                 name: "Douglas Engelbart",
@@ -749,7 +749,7 @@
                 cardEl.dataset.index = idx;
                 cardEl.dataset.key = cardKey;
 
-                cardEl.onclick = (e) => {
+                cardEl.onclick = () => {
                     if (this.dragMoved) return;
                     const N = this.cards.length;
                     if (N === 0) return;
@@ -757,7 +757,6 @@
                     if (idx === frontIdx) {
                         if (this.onFrontCardClick) this.onFrontCardClick(cardEl, cardKey);
                     } else {
-                        // Rotiere auf kürzestem Kreisweg zur angetippten Karte
                         let diff = idx - frontIdx;
                         if (diff > N / 2) diff -= N;
                         if (diff < -N / 2) diff += N;
@@ -876,10 +875,8 @@
             }
         }
 
-        // Initialisiere die Karussells
         let startCarousel, leaderOwnCarousel, leaderPoolCarousel, memberOwnCarousel, memberPoolCarousel;
 
-        // Deck sicher aus localStorage laden oder neu ziehen
         let myDeck = [];
         try {
             const savedDeck = JSON.parse(localStorage.getItem("myInformaticsTCGDeck_v2") || "null");
@@ -949,7 +946,7 @@
                         <div class="tcg-art-frame">
                             <img alt="">
                         </div>
-                        <div class="tcg-type-banner">${isSelectable ? "Tippen zum Auswählen" : "Pionier der Informatik"}</div>
+                        <div class="tcg-type-banner">${isSelectable ? "Tippen zum Auswählen" : "Persönlichkeit der Informatik"}</div>
                     </div>
                     <div class="tcg-card-desc"></div>
                     <div class="tcg-card-footer">TU WIEN • INFORMATICS TCG</div>
