@@ -193,6 +193,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: 50% 20%;
             pointer-events: none;
         }
         .tcg-type-banner {
@@ -910,6 +911,7 @@
             const img = div.querySelector("img");
             img.src = card.img;
             img.alt = card.name;
+            img.style.objectPosition = card.pos || "50% 20%";
             div.querySelector(".tcg-card-desc").textContent = card.desc;
             return div;
         }
