@@ -9,52 +9,120 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --primary: #2c3e50; --secondary: #18bc9c; --bg: #ecf0f1; --text: #333; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); padding: 25px 40px; margin: 0; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); padding: 20px 30px; margin: 0; }
         
         /* Login Overlay */
-        #admin-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.96); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .login-box { background: white; padding: 30px; border-radius: 12px; width: 420px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .login-box input { width: calc(100% - 24px); padding: 12px; margin: 10px 0; font-size: 1em; border: 1px solid #ccc; border-radius: 6px; }
+        #admin-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.96); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
+        .login-box { background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .login-box input { width: 100%; padding: 12px; margin: 10px 0; font-size: 1em; border: 1px solid #ccc; border-radius: 6px; }
         .login-box button { background: var(--secondary); color: white; border: none; padding: 12px 20px; font-size: 1.1em; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
 
         /* Steuerleiste */
-        .admin-bar { display: flex; justify-content: space-between; align-items: center; background: #1a252f; color: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95em; }
-        .admin-bar select, .admin-bar button { padding: 8px 12px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; margin-left: 8px; }
+        .admin-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: #1a252f; color: white; padding: 12px 20px; border-radius: 10px; margin-bottom: 20px; font-size: 0.95em; }
+        .admin-bar-group { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .admin-bar select, .admin-bar button { padding: 9px 14px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; font-size: 0.95em; }
         .btn-activate { background: var(--secondary); color: white; }
         .btn-toggle-lb { background: #f39c12; color: white; }
+        .status-pill { padding: 5px 12px; border-radius: 20px; font-size: 0.85em; font-weight: bold; background: #34495e; color: #ecf0f1; }
+        .status-pill.active { background: #27ae60; color: white; }
+        .status-pill.ended { background: #e74c3c; color: white; }
 
-        .header { display: flex; align-items: center; justify-content: center; gap: 60px; margin-bottom: 30px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .header-text { text-align: center; }
-        .header-text h1 { margin-top: 0; margin-bottom: 5px; color: var(--primary); }
-        #main-qrcode { background: white; padding: 10px; border: 2px solid #eee; border-radius: 10px; }
-
-        .timer-box { background: #f8f9fa; padding: 15px 25px; border-radius: 10px; text-align: center; border: 2px solid var(--primary); }
-        .timer-display { font-size: 2.5em; font-weight: bold; color: var(--primary); font-family: monospace; margin-bottom: 5px; }
-        .timer-controls button { background: var(--primary); color: white; border: none; padding: 5px 10px; margin: 2px; border-radius: 3px; cursor: pointer; font-weight: bold; }
-        .btn-start { background: var(--secondary) !important; }
+        /* Vollflächiger 3-Spalten-Header */
+        .header {
+            display: grid;
+            grid-template-columns: minmax(240px, 1fr) 2fr minmax(240px, 1fr);
+            align-items: stretch;
+            gap: 25px;
+            margin-bottom: 25px;
+            background: white;
+            padding: 22px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+        }
+        .timer-box {
+            background: #f8f9fa;
+            padding: 16px 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid var(--primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .timer-label { font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: bold; margin-bottom: 4px; }
+        .timer-display { font-size: 3em; font-weight: bold; color: var(--primary); font-family: monospace; line-height: 1.1; margin-bottom: 10px; }
+        .timer-controls { display: flex; gap: 8px; justify-content: center; width: 100%; }
+        .timer-controls button { background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.95em; }
+        .btn-start { background: var(--secondary) !important; flex-grow: 1; max-width: 160px; }
         .btn-start:disabled { background: #95a5a6 !important; cursor: not-allowed; }
 
-        .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .header-text {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 10px 20px;
+            border-left: 2px solid #f1f2f6;
+            border-right: 2px solid #f1f2f6;
+        }
+        .header-text h1 { margin: 0 0 10px 0; font-size: 2.4em; color: var(--primary); letter-spacing: 0.5px; }
+        .header-text p { margin: 0; font-size: 1.15em; line-height: 1.5; color: #475569; }
+        .url-highlight { display: inline-block; margin: 6px 0; padding: 6px 14px; background: #eef2f7; color: var(--primary); border-radius: 6px; font-weight: bold; font-size: 1.05em; word-break: break-all; }
+
+        .qr-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+        }
+        #main-qrcode { background: white; padding: 8px; border-radius: 8px; }
+        .qr-caption { font-size: 0.8em; font-weight: bold; color: #64748b; margin-top: 6px; }
+
+        /* Haupt-Layout */
+        .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         
-        .problem-box { background: var(--primary); color: white; padding: 30px; border-radius: 10px; font-size: 1.4em; text-align: center; height: fit-content; }
-        .reward-box { background: var(--secondary); color: white; padding: 30px; border-radius: 10px; font-size: 1.4em; text-align: center; height: fit-content; display: none; }
+        .problem-box { background: var(--primary); color: white; padding: 30px; border-radius: 12px; font-size: 1.35em; text-align: center; height: fit-content; }
+        .reward-box { background: var(--secondary); color: white; padding: 30px; border-radius: 12px; font-size: 1.35em; text-align: center; height: fit-content; display: none; }
         
-        .leaderboard { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .leaderboard { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
         .leaderboard-item { border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
         .leaderboard-item:hover { background-color: #f1f2f6; }
-        .leaderboard-row { display: flex; justify-content: space-between; padding: 15px; font-size: 1.2em; }
-        .rank-1 { background-color: #f1c40f !important; font-weight: bold; color: black; }
+        .leaderboard-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 15px; font-size: 1.15em; }
+        .rank-1 { background-color: #f1c40f !important; font-weight: bold; color: black; border-radius: 6px; }
         
         .leaderboard-details { padding: 15px; background-color: #f8f9fa; font-size: 0.9em; color: #555; border-top: 1px dashed #ccc; }
-        .played-card { display: inline-block; background: #e0e6ed; color: #2c3e50; padding: 5px 10px; margin: 5px; border-radius: 5px; font-weight: bold; }
+        .played-card { display: inline-block; background: #e0e6ed; color: #2c3e50; padding: 5px 10px; margin: 4px; border-radius: 5px; font-weight: bold; }
         
-        .btn-end { background-color: #e74c3c; color: white; border: none; padding: 15px 20px; font-size: 0.7em; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 20px; width: 100%; }
+        .btn-end { background-color: #e74c3c; color: white; border: none; padding: 15px 20px; font-size: 0.75em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 20px; width: 100%; }
+        .btn-end:hover { background-color: #c0392b; }
         .error-msg { color: #e74c3c; font-weight: bold; margin-top: 10px; }
+
+        /* Responsive Design für kleinere Bildschirme & Smartphones */
+        @media (max-width: 1024px) {
+            body { padding: 15px; }
+            .header { grid-template-columns: 1fr; gap: 15px; padding: 18px; }
+            .header-text { border-left: none; border-right: none; border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 15px 0; }
+            .layout { grid-template-columns: 1fr; gap: 20px; }
+        }
+        @media (max-width: 600px) {
+            .admin-bar { flex-direction: column; align-items: stretch; text-align: center; }
+            .admin-bar-group { justify-content: center; }
+            .admin-bar select, .admin-bar button { width: 100%; }
+            .header-text h1 { font-size: 1.8em; }
+            .problem-box, .reward-box { font-size: 1.1em; padding: 20px; }
+            .leaderboard-row { font-size: 1em; padding: 12px 8px; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- LOGIN OVERLAY (Reiner Lesezugriff, kein Eingabefeld für Datensätze) -->
+    <!-- LOGIN OVERLAY -->
     <div id="admin-overlay">
         <div class="login-box">
             <h2>Beamer-Freischaltung</h2>
@@ -67,43 +135,51 @@
 
     <!-- STEUERLEISTE -->
     <div class="admin-bar">
-        <div>
-            <span><b>Runden-Steuerung:</b></span>
+        <div class="admin-bar-group">
+            <span><b>Runden-Auswahl:</b></span>
             <select id="round-select"></select>
-            <button class="btn-activate" onclick="activateSelectedRound()">Runde im Hörsaal starten</button>
+            <button class="btn-activate" onclick="activateSelectedRound()">Runde vorbereiten / zurücksetzen</button>
+            <span id="round-status-badge" class="status-pill">Vorbereitung (Tausch offen)</span>
         </div>
-        <div>
+        <div class="admin-bar-group">
             <button class="btn-toggle-lb" id="toggle-lb-btn" onclick="toggleLeaderboardMode()">Zeige: Semester-Leaderboard</button>
         </div>
     </div>
 
+    <!-- VOLLFLÄCHIGER HEADER -->
     <div class="header">
         <div class="timer-box" id="timer-box">
+            <div class="timer-label">Runden-Timer</div>
             <div class="timer-display" id="time-display">15:00</div>
             <div class="timer-controls">
-                <button onclick="adjustTimer(-1)">-1m</button>
-                <button class="btn-start" onclick="startTimer()" id="start-timer-btn">Start</button>
-                <button onclick="adjustTimer(1)">+1m</button>
+                <button id="minus-timer-btn" onclick="adjustTimer(-1)">-1m</button>
+                <button class="btn-start" onclick="startTimer()" id="start-timer-btn">Runde starten</button>
+                <button id="plus-timer-btn" onclick="adjustTimer(1)">+1m</button>
             </div>
         </div>
 
         <div class="header-text">
             <h1>Informatics TCG</h1>
-            <p>Scanne den Code oder gehe auf<br><b>floxe.github.io/Informatik-TCG/student.html</b><br>um ein Team zu gründen!</p>
+            <p>Scanne den QR-Code oder öffne im Browser:<br>
+            <span class="url-highlight">floxe.github.io/Informatik-TCG/student.html</span><br>
+            um dein Deck zu sehen, Karten zu tauschen oder einem Team beizutreten!</p>
         </div>
         
-        <div id="main-qrcode"></div>
+        <div class="qr-wrapper">
+            <div id="main-qrcode"></div>
+            <div class="qr-caption">Direkt zur Spielansicht</div>
+        </div>
     </div>
 
     <div class="layout">
         <div>
             <div class="problem-box" id="problem-view">
-                <h2 id="prob-title">Bitte Runde starten...</h2>
+                <h2 id="prob-title">Bitte Runde auswählen...</h2>
                 <p id="prob-desc"></p>
                 <hr>
                 <p style="font-size: 0.85em; color: #bdc3c7;">Benötigte Expertise:<br>
                 <span id="prob-targets"></span></p>
-                <p style="font-size: 0.75em; margin-top: 20px;">Jedes Team darf bis zu <b>5 Karten</b> kombinieren. Zu viel oder zu wenig gibt Fehlerpunkte!</p>
+                <p style="font-size: 0.75em; margin-top: 20px;">Jedes Team (max. 5 Personen) darf bis zu <b>5 Karten</b> kombinieren. Zu viel oder zu wenig gibt Fehlerpunkte!</p>
                 
                 <button class="btn-end" onclick="endRound()">RUNDE BEENDEN & BELOHNUNG ZEIGEN</button>
             </div>
@@ -117,7 +193,7 @@
         </div>
 
         <div class="leaderboard" id="leaderboard">
-            <h2 style="text-align: center;" id="lb-title">Live Runden-Leaderboard</h2>
+            <h2 style="text-align: center; margin-top: 0;" id="lb-title">Live Runden-Leaderboard</h2>
             <p style="text-align: center; font-size: 0.8em; margin-top: -10px; color: #7f8c8d;" id="lb-subtitle">(Klicke auf ein Team, um die gespielten Karten zu sehen)</p>
             <div id="lb-content">
                 <p style="text-align: center; color: #7f8c8d;">Warte auf Einreichungen...</p>
@@ -140,7 +216,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Schutz gegen HTML-/Script-Injection bei externen Texten
         function escapeHtml(str) {
             if (typeof str !== "string") return "";
             return str
@@ -151,7 +226,6 @@
                 .replace(/'/g, "&#039;");
         }
 
-        // Entfernt verbotene Firebase-Pfadzeichen im Passwort-Feld
         document.getElementById("admin-pass").addEventListener("input", function() {
             const clean = this.value.replace(/[.$#[\]/]/g, "").slice(0, 64);
             if (this.value !== clean) this.value = clean;
@@ -215,6 +289,7 @@
         let currentRoundId = "round1";
         let adminPass = "";
         let isAdminUnlocked = false;
+        let roundState = "waiting"; // "waiting" | "active" | "ended"
 
         let submissions = [];
         let semesterScores = {};
@@ -233,15 +308,34 @@
         }
 
         function adjustTimer(mins) {
-            if (!isAdminUnlocked || timerInterval) return; 
+            if (!isAdminUnlocked || timerInterval || roundState !== "waiting") return; 
             timerSeconds += mins * 60;
-            if (timerSeconds < 0) timerSeconds = 0;
+            if (timerSeconds < 60) timerSeconds = 60;
             updateTimerDisplay();
         }
 
         function startTimer() {
-            if (!isAdminUnlocked || timerInterval || timerSeconds <= 0) return; 
-            document.getElementById("start-timer-btn").disabled = true;
+            if (!isAdminUnlocked || timerInterval || roundState !== "waiting" || timerSeconds <= 0) return;
+            roundState = "active";
+
+            // Verstecke -1m und +1m Buttons sobald der Timer läuft
+            document.getElementById("minus-timer-btn").style.display = "none";
+            document.getElementById("plus-timer-btn").style.display = "none";
+
+            const startBtn = document.getElementById("start-timer-btn");
+            startBtn.disabled = true;
+            startBtn.innerText = "Läuft...";
+
+            const badge = document.getElementById("round-status-badge");
+            badge.innerText = "Runde aktiv (Tausch gesperrt)";
+            badge.className = "status-pill active";
+
+            // Schalte die Runde im Backend offiziell auf "active"
+            db.ref('gameState').update({
+                status: "active",
+                startedAt: Date.now()
+            });
+
             timerInterval = setInterval(() => {
                 timerSeconds--;
                 updateTimerDisplay();
@@ -253,12 +347,12 @@
             updateTimerDisplay();
             new QRCode(document.getElementById("main-qrcode"), {
                 text: "https://floxe.github.io/Informatik-TCG/student.html",
-                width: 120,
-                height: 120
+                width: 130,
+                height: 130
             });
         };
 
-        // --- Login & Tresor-Abfrage (Nur Lesezugriff) ---
+        // --- Login & Tresor-Abfrage ---
         function loginAdmin() {
             adminPass = document.getElementById("admin-pass").value.replace(/[.$#[\]/]/g, "").trim().slice(0, 64);
             let errEl = document.getElementById("login-error");
@@ -299,6 +393,7 @@
             activateSelectedRound();
         }
 
+        // Bereitet die gewählte Runde vor (Status "waiting": Tauschen offen, Timer bereit)
         function activateSelectedRound() {
             if (!isAdminUnlocked) return;
             currentRoundId = document.getElementById("round-select").value;
@@ -306,10 +401,21 @@
             if (!r) return;
 
             if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            roundState = "waiting";
             timerSeconds = 15 * 60;
             updateTimerDisplay();
-            document.getElementById("start-timer-btn").disabled = false;
-            document.getElementById("start-timer-btn").innerText = "Start";
+
+            // Zeige -1m und +1m Buttons wieder an und aktiviere den Start-Button
+            document.getElementById("minus-timer-btn").style.display = "inline-block";
+            document.getElementById("plus-timer-btn").style.display = "inline-block";
+            const startBtn = document.getElementById("start-timer-btn");
+            startBtn.disabled = false;
+            startBtn.innerText = "Runde starten";
+
+            const badge = document.getElementById("round-status-badge");
+            badge.innerText = "Vorbereitung (Tausch offen)";
+            badge.className = "status-pill";
+
             document.getElementById("problem-view").style.display = "block";
             document.getElementById("reward-view").style.display = "none";
 
@@ -322,7 +428,7 @@
             db.ref('gameState').set({
                 roundId: currentRoundId,
                 roundTitle: r.title,
-                status: "active",
+                status: "waiting",
                 rewardToken: null,
                 rewardCard: null
             });
@@ -370,12 +476,25 @@
         }
 
         function endRound() {
-            if (!isAdminUnlocked) return;
+            if (!isAdminUnlocked || roundState === "ended") return;
+            roundState = "ended";
+
             if (timerInterval) {
                 clearInterval(timerInterval);
                 timerInterval = null;
             }
-            document.getElementById("start-timer-btn").innerText = "Beendet";
+
+            // Deaktiviere Start-Button dauerhaft und blende -1m/+1m aus
+            document.getElementById("minus-timer-btn").style.display = "none";
+            document.getElementById("plus-timer-btn").style.display = "none";
+            const startBtn = document.getElementById("start-timer-btn");
+            startBtn.disabled = true;
+            startBtn.innerText = "Beendet";
+
+            const badge = document.getElementById("round-status-badge");
+            badge.innerText = "Runde beendet (Tausch offen)";
+            badge.className = "status-pill ended";
+
             document.getElementById("problem-view").style.display = "none";
             document.getElementById("reward-view").style.display = "block";
             
