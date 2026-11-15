@@ -15,6 +15,7 @@
             --bg: #e2e8f0;
             --text: #1e293b;
         }
+        * { box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
             background: var(--bg);
@@ -26,7 +27,7 @@
         }
         .container {
             background: white;
-            padding: 20px;
+            padding: 18px;
             border-radius: 14px;
             max-width: 520px;
             margin: 0 auto;
@@ -36,37 +37,112 @@
             background: var(--secondary);
             color: white;
             border: none;
-            padding: 14px;
+            padding: 13px;
             width: 100%;
             border-radius: 8px;
-            font-size: 1.05em;
+            font-size: 1.02em;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 8px;
             font-weight: bold;
             transition: background 0.2s;
         }
         .btn:hover { background: #059669; }
         .btn:disabled { background: #94a3b8; cursor: not-allowed; }
-        input {
+        .btn-outline {
+            background: transparent;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 9px 14px;
+            font-size: 0.9em;
+            margin-top: 12px;
+        }
+        .btn-outline:hover { background: #f1f5f9; }
+
+        input, select {
             padding: 10px;
-            width: calc(100% - 24px);
-            font-size: 1.1em;
+            width: 100%;
+            font-size: 1.05em;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
+        }
+
+        /* Profil-Leiste (Spielername) */
+        .profile-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            font-size: 0.9em;
+            border: 1px solid #e2e8f0;
+        }
+        .profile-bar button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .name-edit-box {
+            display: none;
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            margin-bottom: 14px;
+        }
+
+        /* Mitglieder-Liste im Team */
+        .members-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 12px 0;
+            text-align: left;
+        }
+        .members-header {
+            font-size: 0.85em;
+            font-weight: bold;
+            color: #475569;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .member-badge {
+            display: inline-block;
+            background: #e2e8f0;
+            color: #1e293b;
+            padding: 4px 9px;
+            border-radius: 14px;
+            font-size: 0.82em;
+            font-weight: bold;
+            margin: 3px;
+        }
+        .member-badge.leader {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
         }
 
         /* 3D Zylinder-Karussell */
         .cylinder-wrapper {
             position: relative;
-            margin: 10px 0 25px 0;
+            margin: 8px 0 20px 0;
             user-select: none;
         }
         .cylinder-stage {
             position: relative;
             width: 100%;
-            height: 360px;
+            height: 350px;
             perspective: 1100px;
             transform-style: preserve-3d;
             overflow: hidden;
@@ -102,12 +178,11 @@
         /* Echtes Trading-Card-Design */
         .tcg-card {
             position: absolute;
-            top: 12px;
+            top: 10px;
             left: 50%;
             width: 220px;
             height: 326px;
             margin-left: -110px;
-            box-sizing: border-box;
             background: linear-gradient(160deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
             border: 7px solid #1e293b;
             border-radius: 16px;
@@ -128,7 +203,6 @@
             border-radius: 8px;
             padding: 6px;
             height: 100%;
-            box-sizing: border-box;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -235,7 +309,6 @@
             letter-spacing: 0.4px;
         }
 
-        /* Einzelkarte in der Belohnungs-Ansicht */
         #reward-card-container .tcg-card {
             position: relative;
             top: 0;
@@ -243,23 +316,40 @@
             margin: 0 auto;
         }
 
-        #qrcode { display: flex; justify-content: center; margin: 15px 0; }
+        #qrcode, #trade-qrcode { display: flex; justify-content: center; margin: 12px 0; }
         #view-start, #view-leader, #view-member, #view-reward { display: none; }
         
-        .role-banner { padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.95em; }
+        .role-banner { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 0.95em; }
         .role-leader { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
         .role-member { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
 
         .saved-team-box { background: #eff6ff; border: 1px solid #bfdbfe; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
-        .success-msg { background: #dcfce7; color: #166534; padding: 15px; border-radius: 8px; margin-top: 15px; font-weight: bold; display: none; }
-        .error-toast { color: #dc2626; font-weight: bold; font-size: 0.9em; min-height: 20px; margin-top: 5px; }
+        .trade-box { background: #fdf4ff; border: 1px solid #f0abfc; padding: 14px; border-radius: 8px; margin-top: 20px; }
+        .success-msg { background: #dcfce7; color: #166534; padding: 14px; border-radius: 8px; margin-top: 12px; font-weight: bold; display: none; }
+        .error-toast { color: #dc2626; font-weight: bold; font-size: 0.88em; min-height: 18px; margin-top: 5px; }
         .swipe-hint { font-size: 0.8em; color: #64748b; margin-top: -5px; margin-bottom: 5px; }
+
+        @media (max-width: 380px) {
+            .container { padding: 12px; }
+            .tcg-card { width: 200px; height: 310px; margin-left: -100px; }
+            .cylinder-stage { height: 330px; }
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
         
+        <!-- PROFIL-LEISTE FÜR SPIELERNAME -->
+        <div class="profile-bar">
+            <span>Dein Name: <b id="player-name-display">...</b></span>
+            <button type="button" onclick="toggleNameEdit()">Name ändern</button>
+        </div>
+        <div class="name-edit-box" id="name-edit-box">
+            <input type="text" id="player-name-input" maxlength="20" autocomplete="off" placeholder="Dein Vorname / Rufname (max. 20 Zeichen)">
+            <button class="btn" style="margin-top: 4px; padding: 10px;" onclick="savePlayerName()">Name speichern</button>
+        </div>
+
         <!-- REWARD VIEW -->
         <div id="view-reward">
             <h2 id="reward-title">Prüfe Berechtigung...</h2>
@@ -270,17 +360,17 @@
 
         <!-- START VIEW -->
         <div id="view-start">
-            <h1>Informatics TCG</h1>
+            <h1 style="margin-top: 0;">Informatics TCG</h1>
             <p style="font-size: 0.9em; color: #475569;" id="active-round-banner">Verbinde mit Hörsaal...</p>
             
-            <!-- Bestehendes Semester-Team reaktivieren -->
+            <!-- Bestehendes Semester-Team reaktivieren (Maximal 3 letzte Teams als Failsafe) -->
             <div id="saved-team-section" class="saved-team-box" style="display: none;">
                 <div style="font-size: 0.9em; margin-bottom: 8px;">
-                    <b>Euer Semester-Team weiterführen:</b><br>
-                    <span id="saved-team-label"></span><br>
-                    <small style="color: #475569;">(Eine Person aus dem bisherigen Team reicht aus, um es für die aktuelle Runde zu öffnen)</small>
+                    <b>Bisheriges Semester-Team weiterführen:</b><br>
+                    <small style="color: #475569;">(Wer das Team für die neue Runde öffnet, übernimmt heute die Teamleitung)</small>
                 </div>
-                <button class="btn" style="margin-top: 0; background: #2563eb;" onclick="reactivateSavedTeam()">Team für aktuelle Runde reaktivieren</button>
+                <select id="saved-teams-select"></select>
+                <button class="btn" style="margin-top: 4px; background: #2563eb;" onclick="reactivateSavedTeam()">Gewähltes Team für diese Runde öffnen</button>
             </div>
 
             <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
@@ -288,24 +378,61 @@
                 <button class="btn" onclick="createTeam()">Neues Team gründen</button>
                 <hr style="margin: 15px 0; border: none; border-top: 1px solid #cbd5e1;">
                 <input type="tel" id="join-pin" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="Team-PIN (4 Zahlen)">
-                <button class="btn" style="background: var(--primary);" onclick="joinTeam()">Team beitreten</button>
+                <button class="btn" style="background: var(--primary);" onclick="joinTeam(false)">Team beitreten (max. 5 Personen)</button>
                 <div id="join-error" class="error-toast"></div>
             </div>
 
             <h3>Dein Kartendeck (<span id="deck-count">3</span>):</h3>
             <p class="swipe-hint">Drehe das Karussell durch Wischen oder über die Pfeile</p>
             <div class="cylinder-wrapper" id="carousel-start"></div>
+
+            <!-- KARTENTAUSCH-BEREICH (Nur offen, wenn keine Runde aktiv läuft) -->
+            <div class="trade-box" id="trade-section">
+                <h3 style="margin-top: 0; color: #701a75;">Karten tauschen (1-zu-1)</h3>
+                <p id="trade-locked-msg" style="display: none; font-size: 0.9em; color: #be123c; font-weight: bold;">
+                    Während einer laufenden Spielrunde ist der Kartentausch gesperrt.
+                </p>
+
+                <div id="trade-controls">
+                    <p style="font-size: 0.85em; color: #475569; margin-top: 0;">
+                        Drehe dein Kartendeck oben auf die Karte, die du abgeben möchtest:
+                    </p>
+                    <button class="btn" style="background: #9333ea;" onclick="createTradeOffer()">Vorderste Karte zum Tausch anbieten</button>
+                    <hr style="margin: 14px 0; border: none; border-top: 1px solid #e9d5ff;">
+                    <input type="tel" id="trade-pin-input" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="4-stelliger Tausch-Code">
+                    <button class="btn" style="background: var(--primary);" onclick="joinTradeOffer()">Tausch-Angebot prüfen & Vorderste Karte bieten</button>
+                </div>
+
+                <!-- Aktive Tausch-Sitzung -->
+                <div id="trade-session-view" style="display: none; margin-top: 12px; background: white; padding: 12px; border-radius: 8px; border: 1px solid #d8b4fe;">
+                    <div>Tausch-Code: <b id="trade-pin-display" style="font-size: 1.3em; color: #701a75;"></b></div>
+                    <div id="trade-qrcode"></div>
+                    <div id="trade-summary" style="font-size: 0.9em; margin: 10px 0; line-height: 1.4;"></div>
+                    <button class="btn" id="confirm-trade-btn" style="display: none; background: #16a34a;" onclick="confirmTradeSwap()">Tausch jetzt verbindlich abschließen</button>
+                    <button class="btn btn-outline" onclick="cancelTradeSession()">Tausch abbrechen / schließen</button>
+                </div>
+                <div id="trade-error" class="error-toast"></div>
+            </div>
         </div>
 
         <!-- LEADER VIEW -->
         <div id="view-leader">
             <div class="role-banner role-leader"><b>Du übernimmst die Teamleitung!</b> Drehe den Team-Pool und tippe die vorderste Karte an, um bis zu 5 Karten auszuwählen.</div>
-            <h2>Team: <span id="leader-team-name"></span></h2>
-            <p>PIN: <b id="team-pin-display" style="font-size: 1.5em; color: var(--primary);"></b></p>
-            <p style="font-size: 0.85em;">Lass die anderen Personen in deinem Team diesen Code scannen:</p>
+            <h2 style="margin: 5px 0;">Team: <span id="leader-team-name"></span></h2>
+            <p style="margin: 5px 0;">PIN: <b id="team-pin-display" style="font-size: 1.5em; color: var(--primary);"></b></p>
+            <p style="font-size: 0.85em; margin-bottom: 5px;">Lass die anderen Personen in deinem Team diesen Code scannen:</p>
             <div id="qrcode"></div>
+
+            <!-- Live Mitglieder-Übersicht -->
+            <div class="members-box">
+                <div class="members-header">
+                    <span>Team-Mitglieder:</span>
+                    <span id="leader-member-count">1 / 5 Personen</span>
+                </div>
+                <div id="leader-member-list"></div>
+            </div>
             
-            <hr style="margin: 20px 0;">
+            <hr style="margin: 18px 0;">
             <h3>Deine eigenen Karten:</h3>
             <div class="cylinder-wrapper" id="carousel-leader-own"></div>
 
@@ -316,21 +443,32 @@
             <div id="leader-error" class="error-toast"></div>
             <button class="btn" id="submit-btn" onclick="submitSolution()">Lösung an Beamer senden</button>
             <div id="success-message" class="success-msg">Eure Lösung wurde eingereicht! Ihr seid nun für die Belohnungskarte am Ende der Runde freigeschaltet.</div>
+            <button class="btn btn-outline" onclick="leaveCurrentTeam()">Team verlassen / Zurück zum Start</button>
         </div>
 
         <!-- MEMBER VIEW -->
         <div id="view-member">
             <div class="role-banner role-member"><b>Du bist im Team.</b> Recherchiert gemeinsam! Die Teamleitung wählt die Karten aus.</div>
-            <h2>Team: <span id="member-team-name"></span></h2>
-            <p>PIN: <b id="member-team-pin" style="font-size: 1.5em; color: var(--primary);"></b></p>
+            <h2 style="margin: 5px 0;">Team: <span id="member-team-name"></span></h2>
+            <p style="margin: 5px 0;">PIN: <b id="member-team-pin" style="font-size: 1.5em; color: var(--primary);"></b></p>
+
+            <!-- Live Mitglieder-Übersicht -->
+            <div class="members-box">
+                <div class="members-header">
+                    <span>Team-Mitglieder:</span>
+                    <span id="member-member-count">1 / 5 Personen</span>
+                </div>
+                <div id="member-member-list"></div>
+            </div>
             
-            <hr style="margin: 20px 0;">
+            <hr style="margin: 18px 0;">
             <h3>Deine eigenen Karten:</h3>
             <div class="cylinder-wrapper" id="carousel-member-own"></div>
 
             <h3>Karten-Pool des gesamten Teams:</h3>
             <p class="swipe-hint">Drehe den Zylinder, um alle Karten eures Teams zu sehen</p>
             <div class="cylinder-wrapper" id="carousel-member-pool"></div>
+            <button class="btn btn-outline" onclick="leaveCurrentTeam()">Team verlassen / Zurück zum Start</button>
         </div>
     </div>
 
@@ -349,10 +487,21 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        const MAX_TEAM_SIZE = 5;
+        const MAX_SAVED_TEAMS = 3;
+
         // Strikte Input-Bereinigung gegen XSS und Code-Injection
-        function sanitizeTeamName(raw) {
+        function sanitizeText(raw, maxLen) {
             if (typeof raw !== "string") return "";
-            return raw.replace(/[<>"'`\\/;{}[\]$]/g, "").trim().slice(0, 25);
+            return raw.replace(/[<>"'`\\/;{}[\]$]/g, "").trim().slice(0, maxLen);
+        }
+
+        function sanitizeTeamName(raw) {
+            return sanitizeText(raw, 25);
+        }
+
+        function sanitizePlayerName(raw) {
+            return sanitizeText(raw, 20);
         }
 
         function sanitizePin(raw) {
@@ -360,13 +509,55 @@
             return raw.replace(/[^0-9]/g, "").slice(0, 4);
         }
 
-        // Live-Filter auf den Input-Feldern
+        // Persistente Spieler-ID & Spieler-Name
+        let myPlayerId = localStorage.getItem("myTCGPlayerId");
+        if (!myPlayerId || !/^[a-zA-Z0-9_]+$/.test(myPlayerId)) {
+            myPlayerId = "p_" + Math.random().toString(36).substring(2, 10);
+            localStorage.setItem("myTCGPlayerId", myPlayerId);
+        }
+
+        let myPlayerName = sanitizePlayerName(localStorage.getItem("myTCGPlayerName") || "");
+        if (!myPlayerName) {
+            myPlayerName = "Studi-" + myPlayerId.slice(-3);
+            localStorage.setItem("myTCGPlayerName", myPlayerName);
+            document.getElementById("name-edit-box").style.display = "block";
+        }
+        document.getElementById("player-name-display").textContent = myPlayerName;
+        document.getElementById("player-name-input").value = myPlayerName;
+
+        function toggleNameEdit() {
+            const box = document.getElementById("name-edit-box");
+            box.style.display = box.style.display === "block" ? "none" : "block";
+        }
+
+        function savePlayerName() {
+            const cleaned = sanitizePlayerName(document.getElementById("player-name-input").value);
+            if (!cleaned) return;
+            myPlayerName = cleaned;
+            localStorage.setItem("myTCGPlayerName", myPlayerName);
+            document.getElementById("player-name-display").textContent = myPlayerName;
+            document.getElementById("name-edit-box").style.display = "none";
+
+            // Falls gerade in einem Raum aktiv, Namen dort live aktualisieren
+            if (currentRoom.length === 4) {
+                db.ref(`rooms/${currentRoom}/members/${myPlayerId}/name`).set(myPlayerName);
+            }
+        }
+
+        // Live-Filter auf allen Input-Feldern
+        document.getElementById("player-name-input").addEventListener("input", function() {
+            const clean = this.value.replace(/[<>"'`\\/;{}[\]$]/g, "").slice(0, 20);
+            if (this.value !== clean) this.value = clean;
+        });
         document.getElementById("team-name").addEventListener("input", function() {
             const clean = this.value.replace(/[<>"'`\\/;{}[\]$]/g, "").slice(0, 25);
             if (this.value !== clean) this.value = clean;
         });
-
         document.getElementById("join-pin").addEventListener("input", function() {
+            const clean = sanitizePin(this.value);
+            if (this.value !== clean) this.value = clean;
+        });
+        document.getElementById("trade-pin-input").addEventListener("input", function() {
             const clean = sanitizePin(this.value);
             if (this.value !== clean) this.value = clean;
         });
@@ -744,6 +935,21 @@
                 this.initTouchAndDrag();
             }
 
+            clear() {
+                this.stage.innerHTML = "";
+                this.cards = [];
+                this.currentPos = 0;
+                this.targetPos = 0;
+                this.updateLayout();
+            }
+
+            getFrontCardKey() {
+                const N = this.cards.length;
+                if (N === 0) return null;
+                const frontIdx = ((Math.round(this.targetPos) % N) + N) % N;
+                return this.cards[frontIdx].dataset.key || null;
+            }
+
             addCardElement(cardEl, cardKey) {
                 const idx = this.cards.length;
                 cardEl.dataset.index = idx;
@@ -877,6 +1083,7 @@
 
         let startCarousel, leaderOwnCarousel, leaderPoolCarousel, memberOwnCarousel, memberPoolCarousel;
 
+        // Deck laden oder initial 3 zufällige aus allen 49 ziehen
         let myDeck = [];
         try {
             const savedDeck = JSON.parse(localStorage.getItem("myInformaticsTCGDeck_v2") || "null");
@@ -900,33 +1107,70 @@
         let currentRoom = "";
         let teamName = "";
         let currentRoundId = "round1";
-        let currentRoundStatus = "active";
+        let currentRoundStatus = "waiting";
         let hasSubmitted = false;
         let teamPoolSet = new Set();
         let selectedCards = [];
+        let membersListenerRef = null;
+        let activeTradeListenerRef = null;
+        let activeTradePin = "";
 
+        // --- Gespeicherte Teams (Failsafe: Maximal die 3 letzten Teams speichern) ---
+        function getSavedTeamsList() {
+            try {
+                let list = JSON.parse(localStorage.getItem("mySavedTCGTeams_v2") || "[]");
+                if (!Array.isArray(list)) list = [];
+                // Migration falls noch einzelnes altes Team gespeichert war
+                let oldSingle = JSON.parse(localStorage.getItem("mySavedTCGTeam") || "null");
+                if (oldSingle && oldSingle.pin && oldSingle.name) {
+                    if (!list.some(t => t.pin === oldSingle.pin)) {
+                        list.unshift({ pin: sanitizePin(oldSingle.pin), name: sanitizeTeamName(oldSingle.name) });
+                    }
+                    localStorage.removeItem("mySavedTCGTeam");
+                }
+                return list.filter(t => sanitizePin(t.pin).length === 4 && sanitizeTeamName(t.name).length > 0).slice(0, MAX_SAVED_TEAMS);
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveTeamToHistory(pin, name) {
+            const cleanPin = sanitizePin(pin);
+            const cleanName = sanitizeTeamName(name);
+            if (cleanPin.length !== 4 || !cleanName) return;
+
+            let list = getSavedTeamsList().filter(t => t.pin !== cleanPin);
+            list.unshift({ pin: cleanPin, name: cleanName });
+            list = list.slice(0, MAX_SAVED_TEAMS);
+            localStorage.setItem("mySavedTCGTeams_v2", JSON.stringify(list));
+            localStorage.setItem("lastActiveTeamPin", cleanPin);
+        }
+
+        // --- Aktuellen Runden-Status abonnieren & Kartentausch sperren/freigeben ---
         db.ref('gameState').on('value', snap => {
             if (snap.exists()) {
                 let gs = snap.val();
                 currentRoundId = gs.roundId || "round1";
-                currentRoundStatus = gs.status || "active";
-                document.getElementById("active-round-banner").innerText = "Aktive Runde: " + (gs.roundTitle || currentRoundId);
+                currentRoundStatus = gs.status || "waiting";
+
+                let statusLabel = "Vorbereitung (Kartentausch offen)";
+                if (currentRoundStatus === "active") statusLabel = "Runde läuft!";
+                if (currentRoundStatus === "ended") statusLabel = "Runde beendet (Kartentausch offen)";
+
+                document.getElementById("active-round-banner").textContent =
+                    (gs.roundTitle || currentRoundId) + " — " + statusLabel;
+
+                updateTradeAvailability();
             }
         });
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlRoom = sanitizePin(urlParams.get('room') || "");
-        const urlNewCard = (urlParams.get('newcard') || "").replace(/[^a-zA-Z0-9_]/g, "");
-        const urlRound = (urlParams.get('round') || "").replace(/[^a-zA-Z0-9_-]/g, "");
-        const urlToken = (urlParams.get('token') || "").replace(/[^a-zA-Z0-9]/g, "");
-        
-        if (urlNewCard && Object.prototype.hasOwnProperty.call(allCards, urlNewCard)) {
-            verifyAndClaimReward(urlNewCard, urlRound, urlToken);
-        } else if (urlRoom.length === 4) {
-            document.getElementById("join-pin").value = urlRoom;
-            joinTeam();
-        } else {
-            initStartScreen();
+        function updateTradeAvailability() {
+            const isRoundRunning = (currentRoundStatus === "active");
+            document.getElementById("trade-locked-msg").style.display = isRoundRunning ? "block" : "none";
+            document.getElementById("trade-controls").style.display = isRoundRunning ? "none" : "block";
+            if (isRoundRunning && activeTradePin) {
+                cancelTradeSession();
+            }
         }
 
         function createCardElement(cardKey, isSelectable) {
@@ -962,28 +1206,106 @@
             return div;
         }
 
-        function initStartScreen() {
+        function refreshStartCarousel() {
             document.getElementById("deck-count").innerText = myDeck.length;
-            document.getElementById("view-start").style.display = "block";
-            startCarousel = new CylinderCarousel("carousel-start");
+            if (!startCarousel) {
+                startCarousel = new CylinderCarousel("carousel-start");
+            } else {
+                startCarousel.clear();
+            }
             myDeck.forEach(c => {
                 const el = createCardElement(c, false);
                 if (el) startCarousel.addCardElement(el, c);
             });
-
-            try {
-                let savedTeam = JSON.parse(localStorage.getItem("mySavedTCGTeam") || "null");
-                if (savedTeam && savedTeam.pin && savedTeam.name) {
-                    const cleanPin = sanitizePin(savedTeam.pin);
-                    const cleanName = sanitizeTeamName(savedTeam.name);
-                    if (cleanPin.length === 4 && cleanName.length > 0) {
-                        document.getElementById("saved-team-section").style.display = "block";
-                        document.getElementById("saved-team-label").textContent = `${cleanName} (PIN: ${cleanPin})`;
-                    }
-                }
-            } catch (e) {}
         }
 
+        function initStartScreen() {
+            document.getElementById("view-leader").style.display = "none";
+            document.getElementById("view-member").style.display = "none";
+            document.getElementById("view-reward").style.display = "none";
+            document.getElementById("view-start").style.display = "block";
+
+            refreshStartCarousel();
+
+            const savedList = getSavedTeamsList();
+            const selectEl = document.getElementById("saved-teams-select");
+            if (savedList.length > 0) {
+                selectEl.innerHTML = "";
+                savedList.forEach(t => {
+                    const opt = document.createElement("option");
+                    opt.value = t.pin;
+                    opt.textContent = `${t.name} (PIN: ${t.pin})`;
+                    selectEl.appendChild(opt);
+                });
+                document.getElementById("saved-team-section").style.display = "block";
+            } else {
+                document.getElementById("saved-team-section").style.display = "none";
+            }
+        }
+
+        // --- Routing & Automatische Sitzungs-Wiederherstellung bei Reload ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlRoom = sanitizePin(urlParams.get('room') || "");
+        const urlTrade = sanitizePin(urlParams.get('trade') || "");
+        const urlNewCard = (urlParams.get('newcard') || "").replace(/[^a-zA-Z0-9_]/g, "");
+        const urlRound = (urlParams.get('round') || "").replace(/[^a-zA-Z0-9_-]/g, "");
+        const urlToken = (urlParams.get('token') || "").replace(/[^a-zA-Z0-9]/g, "");
+
+        if (urlNewCard && Object.prototype.hasOwnProperty.call(allCards, urlNewCard)) {
+            verifyAndClaimReward(urlNewCard, urlRound, urlToken);
+        } else if (urlRoom.length === 4) {
+            document.getElementById("join-pin").value = urlRoom;
+            joinTeam(false);
+        } else if (urlTrade.length === 4) {
+            initStartScreen();
+            document.getElementById("trade-pin-input").value = urlTrade;
+        } else {
+            // Prüfen, ob man vor dem Seiten-Reload in einem aktiven Team war
+            try {
+                const activeSession = JSON.parse(localStorage.getItem("activeTCGSession") || "null");
+                if (activeSession && sanitizePin(activeSession.pin).length === 4) {
+                    const rPin = sanitizePin(activeSession.pin);
+                    db.ref('rooms/' + rPin).once('value').then(snap => {
+                        if (snap.exists()) {
+                            const rData = snap.val();
+                            const rInfo = rData.info || {};
+                            if (activeSession.role === "leader" && rInfo.leaderId === myPlayerId) {
+                                openLeaderRoom(rPin, rInfo.name || activeSession.name, true);
+                            } else if (rData.members && rData.members[myPlayerId]) {
+                                document.getElementById("join-pin").value = rPin;
+                                joinTeam(true);
+                            } else {
+                                localStorage.removeItem("activeTCGSession");
+                                initStartScreen();
+                            }
+                        } else {
+                            localStorage.removeItem("activeTCGSession");
+                            initStartScreen();
+                        }
+                    }).catch(() => initStartScreen());
+                } else {
+                    initStartScreen();
+                }
+            } catch (e) {
+                initStartScreen();
+            }
+        }
+
+        function leaveCurrentTeam() {
+            if (membersListenerRef) {
+                membersListenerRef.off();
+                membersListenerRef = null;
+            }
+            localStorage.removeItem("activeTCGSession");
+            currentRoom = "";
+            teamPoolSet.clear();
+            selectedCards = [];
+            hasSubmitted = false;
+            window.history.replaceState({}, document.title, window.location.pathname);
+            initStartScreen();
+        }
+
+        // --- Belohnungs-Prüfung ---
         function verifyAndClaimReward(cardKey, roundParam, tokenParam) {
             document.getElementById("view-reward").style.display = "block";
             let titleEl = document.getElementById("reward-title");
@@ -1022,33 +1344,44 @@
             });
         }
 
+        // --- Team gründen, reaktivieren & beitreten ---
         function createTeam() {
             teamName = sanitizeTeamName(document.getElementById("team-name").value) || "Anonymes Team";
             currentRoom = Math.floor(1000 + Math.random() * 9000).toString();
-            openLeaderRoom(currentRoom, teamName);
+            openLeaderRoom(currentRoom, teamName, false);
         }
 
         function reactivateSavedTeam() {
-            try {
-                let savedTeam = JSON.parse(localStorage.getItem("mySavedTCGTeam"));
-                if (!savedTeam) return;
-                const cleanPin = sanitizePin(savedTeam.pin);
-                const cleanName = sanitizeTeamName(savedTeam.name) || "Anonymes Team";
-                if (cleanPin.length === 4) openLeaderRoom(cleanPin, cleanName);
-            } catch (e) {}
+            const selectEl = document.getElementById("saved-teams-select");
+            const chosenPin = sanitizePin(selectEl.value);
+            const savedList = getSavedTeamsList();
+            const found = savedList.find(t => t.pin === chosenPin);
+            if (!found) return;
+            // Wer das Team reaktiviert, wird für die aktuelle Sitzung immer die neue Teamleitung
+            openLeaderRoom(found.pin, found.name, false);
         }
 
-        function openLeaderRoom(pin, name) {
+        function openLeaderRoom(pin, name, isReconnect) {
             currentRoom = sanitizePin(pin);
             teamName = sanitizeTeamName(name) || "Anonymes Team";
-            localStorage.setItem("mySavedTCGTeam", JSON.stringify({ pin: currentRoom, name: teamName }));
-            localStorage.setItem("lastActiveTeamPin", currentRoom);
+            saveTeamToHistory(currentRoom, teamName);
+            localStorage.setItem("activeTCGSession", JSON.stringify({
+                pin: currentRoom,
+                name: teamName,
+                role: "leader"
+            }));
 
             document.getElementById("view-start").style.display = "none";
+            document.getElementById("view-member").style.display = "none";
             document.getElementById("view-leader").style.display = "block";
             document.getElementById("team-pin-display").textContent = currentRoom;
             document.getElementById("leader-team-name").textContent = teamName;
             document.getElementById("submit-btn").disabled = true;
+            document.getElementById("submit-btn").style.display = "block";
+            document.getElementById("success-message").style.display = "none";
+            hasSubmitted = false;
+            selectedCards = [];
+            teamPoolSet.clear();
 
             let joinUrl = window.location.href.split('?')[0] + "?room=" + currentRoom;
             document.getElementById("qrcode").innerHTML = "";
@@ -1083,16 +1416,37 @@
                 document.getElementById("submit-btn").disabled = selectedCards.length === 0;
             });
 
-            db.ref('rooms/' + currentRoom + '/info').set({ name: teamName });
-            db.ref('rooms/' + currentRoom + '/members').set({ leader: myDeck });
+            if (!isReconnect) {
+                // Neuer Raum oder Reaktivierung für neue Vorlesung: Neue Teamleitung setzen & heutigen Member-Pool frisch mit 1/5 starten
+                db.ref('rooms/' + currentRoom + '/info').set({
+                    name: teamName,
+                    leaderId: myPlayerId,
+                    roundId: currentRoundId
+                });
+                const initialMembers = {};
+                initialMembers[myPlayerId] = { name: myPlayerName, cards: myDeck, isLeader: true };
+                db.ref('rooms/' + currentRoom + '/members').set(initialMembers);
+            } else {
+                // Nur Seiten-Reload: Eigene Daten aktualisieren, bestehende Mitglieder behalten
+                db.ref(`rooms/${currentRoom}/members/${myPlayerId}`).set({
+                    name: myPlayerName,
+                    cards: myDeck,
+                    isLeader: true
+                });
+                // Prüfen ob in dieser Runde bereits eingereicht wurde
+                db.ref(`rooms/${currentRoom}/submittedRounds/${currentRoundId}`).once('value').then(sSnap => {
+                    if (sSnap.val() === true) {
+                        hasSubmitted = true;
+                        document.getElementById("submit-btn").style.display = "none";
+                        document.getElementById("success-message").style.display = "block";
+                    }
+                });
+            }
 
-            db.ref('rooms/' + currentRoom + '/members').on('child_added', (snapshot) => {
-                let memberCards = snapshot.val();
-                if (Array.isArray(memberCards)) addCardsToPool(memberCards, true);
-            });
+            subscribeToRoomMembers(currentRoom, true);
         }
 
-        function joinTeam() {
+        function joinTeam(isReconnect) {
             let errorBox = document.getElementById("join-error");
             errorBox.innerText = ""; 
             
@@ -1102,36 +1456,90 @@
                 return;
             }
 
-            db.ref('rooms/' + pinInput + '/info').once('value').then((snapshot) => {
-                if (snapshot.exists()) {
-                    currentRoom = pinInput;
-                    teamName = sanitizeTeamName(snapshot.val().name) || "Team " + currentRoom;
-                    localStorage.setItem("mySavedTCGTeam", JSON.stringify({ pin: currentRoom, name: teamName }));
-                    localStorage.setItem("lastActiveTeamPin", currentRoom);
-                    
-                    document.getElementById("view-start").style.display = "none";
-                    document.getElementById("view-member").style.display = "block";
-                    document.getElementById("member-team-pin").textContent = currentRoom;
-                    document.getElementById("member-team-name").textContent = teamName;
-
-                    memberOwnCarousel = new CylinderCarousel("carousel-member-own");
-                    myDeck.forEach(c => {
-                        const el = createCardElement(c, false);
-                        if (el) memberOwnCarousel.addCardElement(el, c);
-                    });
-
-                    memberPoolCarousel = new CylinderCarousel("carousel-member-pool");
-
-                    let myId = Math.random().toString(36).substring(2, 9);
-                    db.ref('rooms/' + currentRoom + '/members/' + myId).set(myDeck);
-
-                    db.ref('rooms/' + currentRoom + '/members').on('child_added', (snapshot) => {
-                        let memberCards = snapshot.val();
-                        if (Array.isArray(memberCards)) addCardsToPool(memberCards, false);
-                    });
-                } else {
+            db.ref('rooms/' + pinInput).once('value').then((snapshot) => {
+                if (!snapshot.exists() || !snapshot.val().info) {
                     errorBox.innerText = "Dieses Team existiert nicht!";
+                    return;
                 }
+
+                const roomData = snapshot.val();
+                const info = roomData.info;
+                const membersObj = roomData.members || {};
+                const memberKeys = Object.keys(membersObj);
+                const alreadyInRoom = Object.prototype.hasOwnProperty.call(membersObj, myPlayerId);
+
+                // Falls man selbst die Teamleitung dieses Raums ist -> direkt in die Teamleitungs-Ansicht!
+                if (info.leaderId === myPlayerId) {
+                    openLeaderRoom(pinInput, info.name, true);
+                    return;
+                }
+
+                // Prüfe maximale Teamgröße (max. 5 Personen)
+                if (!alreadyInRoom && memberKeys.length >= MAX_TEAM_SIZE) {
+                    errorBox.innerText = "Dieses Team ist für diese Runde bereits voll (max. 5 Personen).";
+                    return;
+                }
+
+                currentRoom = pinInput;
+                teamName = sanitizeTeamName(info.name) || "Team " + currentRoom;
+                saveTeamToHistory(currentRoom, teamName);
+                localStorage.setItem("activeTCGSession", JSON.stringify({
+                    pin: currentRoom,
+                    name: teamName,
+                    role: "member"
+                }));
+                
+                document.getElementById("view-start").style.display = "none";
+                document.getElementById("view-leader").style.display = "none";
+                document.getElementById("view-member").style.display = "block";
+                document.getElementById("member-team-pin").textContent = currentRoom;
+                document.getElementById("member-team-name").textContent = teamName;
+                teamPoolSet.clear();
+
+                memberOwnCarousel = new CylinderCarousel("carousel-member-own");
+                myDeck.forEach(c => {
+                    const el = createCardElement(c, false);
+                    if (el) memberOwnCarousel.addCardElement(el, c);
+                });
+
+                memberPoolCarousel = new CylinderCarousel("carousel-member-pool");
+
+                db.ref(`rooms/${currentRoom}/members/${myPlayerId}`).set({
+                    name: myPlayerName,
+                    cards: myDeck,
+                    isLeader: false
+                });
+
+                subscribeToRoomMembers(currentRoom, false);
+            });
+        }
+
+        function subscribeToRoomMembers(roomPin, isLeader) {
+            if (membersListenerRef) membersListenerRef.off();
+            membersListenerRef = db.ref('rooms/' + roomPin + '/members');
+
+            membersListenerRef.on('value', (snapshot) => {
+                const membersObj = snapshot.val() || {};
+                const memberIds = Object.keys(membersObj);
+
+                const countEl = document.getElementById(isLeader ? "leader-member-count" : "member-member-count");
+                const listEl = document.getElementById(isLeader ? "leader-member-list" : "member-member-list");
+                countEl.textContent = `${memberIds.length} / ${MAX_TEAM_SIZE} Personen`;
+                listEl.innerHTML = "";
+
+                memberIds.forEach(pid => {
+                    const entry = membersObj[pid];
+                    const cardsArr = Array.isArray(entry) ? entry : (entry && Array.isArray(entry.cards) ? entry.cards : []);
+                    const mName = (entry && entry.name) ? sanitizePlayerName(entry.name) : "Teammitglied";
+                    const mLeader = Boolean(entry && entry.isLeader);
+
+                    const badge = document.createElement("span");
+                    badge.className = "member-badge" + (mLeader ? " leader" : "");
+                    badge.textContent = mLeader ? `${mName} (Leitung)` : mName;
+                    listEl.appendChild(badge);
+
+                    addCardsToPool(cardsArr, isLeader);
+                });
             });
         }
 
@@ -1153,7 +1561,7 @@
             if (hasSubmitted || selectedCards.length === 0) return;
             let errBox = document.getElementById("leader-error");
             if (currentRoundStatus !== "active") {
-                errBox.innerText = "Diese Runde ist bereits beendet. Einreichung nicht mehr möglich.";
+                errBox.innerText = "Die Runde ist am Beamer noch nicht gestartet oder bereits beendet.";
                 return;
             }
             hasSubmitted = true;
@@ -1171,6 +1579,228 @@
             
             document.getElementById("submit-btn").style.display = "none";
             document.getElementById("success-message").style.display = "block";
+        }
+
+        // ==========================================
+        // 1-ZU-1 KARTENTAUSCH-SYSTEM
+        // ==========================================
+        function getCompletedTrades() {
+            try {
+                return JSON.parse(localStorage.getItem("completedTCGTrades") || "[]");
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function markTradeCompleted(tradeId) {
+            let list = getCompletedTrades();
+            if (!list.includes(tradeId)) {
+                list.push(tradeId);
+                localStorage.setItem("completedTCGTrades", JSON.stringify(list.slice(-30)));
+            }
+        }
+
+        function createTradeOffer() {
+            const errEl = document.getElementById("trade-error");
+            errEl.innerText = "";
+            if (currentRoundStatus === "active") {
+                errEl.innerText = "Während einer laufenden Runde ist kein Tausch möglich.";
+                return;
+            }
+            const offeredCard = startCarousel ? startCarousel.getFrontCardKey() : null;
+            if (!offeredCard || !myDeck.includes(offeredCard)) {
+                errEl.innerText = "Bitte wähle zuerst eine gültige Karte im Karussell aus.";
+                return;
+            }
+
+            activeTradePin = Math.floor(1000 + Math.random() * 9000).toString();
+            const tradeId = activeTradePin + "_" + Date.now();
+
+            db.ref('trades/' + activeTradePin).set({
+                tradeId: tradeId,
+                hostId: myPlayerId,
+                hostName: myPlayerName,
+                hostCard: offeredCard,
+                partnerId: "",
+                partnerName: "",
+                partnerCard: "",
+                status: "open",
+                createdAt: Date.now()
+            });
+
+            openTradeSessionUI(activeTradePin, true);
+        }
+
+        function joinTradeOffer() {
+            const errEl = document.getElementById("trade-error");
+            errEl.innerText = "";
+            if (currentRoundStatus === "active") {
+                errEl.innerText = "Während einer laufenden Runde ist kein Tausch möglich.";
+                return;
+            }
+
+            const pin = sanitizePin(document.getElementById("trade-pin-input").value);
+            if (pin.length !== 4) {
+                errEl.innerText = "Bitte gib einen 4-stelligen Tausch-Code ein.";
+                return;
+            }
+
+            const myOfferedCard = startCarousel ? startCarousel.getFrontCardKey() : null;
+            if (!myOfferedCard || !myDeck.includes(myOfferedCard)) {
+                errEl.innerText = "Drehe dein Deck zuerst auf die Karte, die du tauschen möchtest.";
+                return;
+            }
+
+            db.ref('trades/' + pin).once('value').then(snap => {
+                if (!snap.exists()) {
+                    errEl.innerText = "Kein offenes Tausch-Angebot unter diesem Code gefunden.";
+                    return;
+                }
+                const t = snap.val();
+                if (t.status !== "open" && t.partnerId !== myPlayerId) {
+                    errEl.innerText = "Dieser Tausch ist bereits belegt oder abgeschlossen.";
+                    return;
+                }
+                if (t.hostId === myPlayerId) {
+                    openTradeSessionUI(pin, true);
+                    return;
+                }
+                if (myDeck.includes(t.hostCard)) {
+                    errEl.innerText = `Du besitzt "${allCards[t.hostCard].name}" bereits in deinem Deck!`;
+                    return;
+                }
+                if (t.hostCard === myOfferedCard) {
+                    errEl.innerText = "Ihr könnt nicht zweimal dieselbe Karte miteinander tauschen.";
+                    return;
+                }
+
+                activeTradePin = pin;
+                db.ref('trades/' + pin).update({
+                    partnerId: myPlayerId,
+                    partnerName: myPlayerName,
+                    partnerCard: myOfferedCard,
+                    status: "proposed"
+                });
+
+                openTradeSessionUI(pin, false);
+            });
+        }
+
+        function openTradeSessionUI(pin, isHost) {
+            document.getElementById("trade-controls").style.display = "none";
+            document.getElementById("trade-session-view").style.display = "block";
+            document.getElementById("trade-pin-display").textContent = pin;
+
+            const qrContainer = document.getElementById("trade-qrcode");
+            qrContainer.innerHTML = "";
+            if (isHost) {
+                const tradeUrl = window.location.href.split('?')[0] + "?trade=" + pin;
+                new QRCode(qrContainer, { text: tradeUrl, width: 110, height: 110 });
+            }
+
+            if (activeTradeListenerRef) activeTradeListenerRef.off();
+            activeTradeListenerRef = db.ref('trades/' + pin);
+
+            activeTradeListenerRef.on('value', snap => {
+                if (!snap.exists()) {
+                    cancelTradeSession();
+                    return;
+                }
+                const t = snap.val();
+                const summaryEl = document.getElementById("trade-summary");
+                const confirmBtn = document.getElementById("confirm-trade-btn");
+                const errEl = document.getElementById("trade-error");
+                const hostCardName = allCards[t.hostCard] ? allCards[t.hostCard].name : t.hostCard;
+                const partnerCardName = allCards[t.partnerCard] ? allCards[t.partnerCard].name : "";
+
+                if (t.status === "open") {
+                    summaryEl.textContent = `${t.hostName} bietet "${hostCardName}". Warte auf Tauschpartner:in...`;
+                    confirmBtn.style.display = "none";
+                } else if (t.status === "proposed") {
+                    summaryEl.textContent = `${t.hostName} gibt "${hostCardName}"  ⇄  ${t.partnerName} gibt "${partnerCardName}"`;
+                    if (isHost) {
+                        if (myDeck.includes(t.partnerCard)) {
+                            errEl.innerText = `Du besitzt "${partnerCardName}" bereits! Tausch nicht möglich.`;
+                            confirmBtn.style.display = "none";
+                        } else {
+                            confirmBtn.style.display = "block";
+                        }
+                    } else {
+                        summaryEl.textContent += " (Warte auf Bestätigung durch " + t.hostName + "...)";
+                        confirmBtn.style.display = "none";
+                    }
+                } else if (t.status === "completed") {
+                    executeLocalCardSwap(t);
+                }
+            });
+        }
+
+        function confirmTradeSwap() {
+            if (!activeTradePin) return;
+            db.ref('trades/' + activeTradePin).once('value').then(snap => {
+                if (!snap.exists()) return;
+                const t = snap.val();
+                if (t.hostId !== myPlayerId || t.status !== "proposed") return;
+                if (!myDeck.includes(t.hostCard) || myDeck.includes(t.partnerCard)) return;
+
+                db.ref('trades/' + activeTradePin).update({
+                    status: "completed"
+                });
+            });
+        }
+
+        function executeLocalCardSwap(t) {
+            if (!t || !t.tradeId) return;
+            const doneList = getCompletedTrades();
+            if (doneList.includes(t.tradeId)) return;
+
+            let cardToGive = "";
+            let cardToReceive = "";
+
+            if (t.hostId === myPlayerId) {
+                cardToGive = t.hostCard;
+                cardToReceive = t.partnerCard;
+            } else if (t.partnerId === myPlayerId) {
+                cardToGive = t.partnerCard;
+                cardToReceive = t.hostCard;
+            } else {
+                return;
+            }
+
+            const idx = myDeck.indexOf(cardToGive);
+            if (idx !== -1 && Object.prototype.hasOwnProperty.call(allCards, cardToReceive)) {
+                // Entferne die alte Karte und füge die neue Karte ein
+                myDeck.splice(idx, 1);
+                if (!myDeck.includes(cardToReceive)) {
+                    myDeck.push(cardToReceive);
+                }
+                localStorage.setItem("myInformaticsTCGDeck_v2", JSON.stringify(myDeck));
+                markTradeCompleted(t.tradeId);
+                refreshStartCarousel();
+            }
+
+            const summaryEl = document.getElementById("trade-summary");
+            summaryEl.textContent = `Tausch erfolgreich abgeschlossen! Du hast "${allCards[cardToReceive].name}" erhalten und "${allCards[cardToGive].name}" abgegeben.`;
+            document.getElementById("confirm-trade-btn").style.display = "none";
+            document.getElementById("trade-qrcode").innerHTML = "";
+        }
+
+        function cancelTradeSession() {
+            if (activeTradeListenerRef) {
+                activeTradeListenerRef.off();
+                activeTradeListenerRef = null;
+            }
+            if (activeTradePin) {
+                db.ref('trades/' + activeTradePin).once('value').then(snap => {
+                    if (snap.exists() && snap.val().status !== "completed" && snap.val().hostId === myPlayerId) {
+                        db.ref('trades/' + activeTradePin).remove();
+                    }
+                });
+                activeTradePin = "";
+            }
+            document.getElementById("trade-session-view").style.display = "none";
+            document.getElementById("trade-error").innerText = "";
+            updateTradeAvailability();
         }
     </script>
 </body>
