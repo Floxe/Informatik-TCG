@@ -136,9 +136,9 @@
     <!-- STEUERLEISTE -->
     <div class="admin-bar">
         <div class="admin-bar-group">
-            <span><b>Runden-Auswahl:</b></span>
+            <span><b>Runde:</b></span>
             <select id="round-select"></select>
-            <button class="btn-activate" onclick="activateSelectedRound()">Runde vorbereiten / zurücksetzen</button>
+            <button class="btn-activate" onclick="activateSelectedRound()">vorbereiten / zurücksetzen</button>
             <span id="round-status-badge" class="status-pill">Vorbereitung (Tausch offen)</span>
         </div>
         <div class="admin-bar-group">
@@ -160,14 +160,13 @@
 
         <div class="header-text">
             <h1>Informatics TCG</h1>
-            <p>Scanne den QR-Code oder öffne im Browser:<br>
+            <p>Scanne den QR-Code oder öffne:<br>
             <span class="url-highlight">floxe.github.io/Informatik-TCG/student.html</span><br>
-            um dein Deck zu sehen, Karten zu tauschen oder einem Team beizutreten!</p>
         </div>
         
         <div class="qr-wrapper">
             <div id="main-qrcode"></div>
-            <div class="qr-caption">Direkt zur Spielansicht</div>
+            <div class="qr-caption">Zur Spielansicht</div>
         </div>
     </div>
 
@@ -186,7 +185,7 @@
 
             <div class="reward-box" id="reward-view">
                 <h2>Runde beendet!</h2>
-                <p>Nur Teams, die in dieser Runde eine Lösung eingereicht haben, können diesen Code scannen:</p>
+                <p>Nur Teams, die in dieser Runde eine Lösung eingereicht haben, können scannen:</p>
                 <div id="reward-qrcode" style="display: flex; justify-content: center; margin: 20px 0; background: white; padding: 15px; border-radius: 10px; width: fit-content; margin-left: auto; margin-right: auto;"></div>
                 <h3 id="reward-name">Belohnung</h3>
             </div>
@@ -194,7 +193,6 @@
 
         <div class="leaderboard" id="leaderboard">
             <h2 style="text-align: center; margin-top: 0;" id="lb-title">Live Runden-Leaderboard</h2>
-            <p style="text-align: center; font-size: 0.8em; margin-top: -10px; color: #7f8c8d;" id="lb-subtitle">(Klicke auf ein Team, um die gespielten Karten zu sehen)</p>
             <div id="lb-content">
                 <p style="text-align: center; color: #7f8c8d;">Warte auf Einreichungen...</p>
             </div>
@@ -542,11 +540,9 @@
             if (showSemesterLb) {
                 btn.innerText = "Zeige: Runden-Leaderboard";
                 title.innerText = "Globales Semester-Leaderboard";
-                sub.innerText = "(Gesamtpunkte aller bisherigen Vorlesungs-Runden)";
             } else {
                 btn.innerText = "Zeige: Semester-Leaderboard";
                 title.innerText = "Live Runden-Leaderboard";
-                sub.innerText = "(Klicke auf ein Team, um die gespielten Karten zu sehen)";
             }
             renderLeaderboard();
         }
