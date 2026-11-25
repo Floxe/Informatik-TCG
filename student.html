@@ -175,7 +175,7 @@
             min-width: 70px;
         }
 
-        /* Echtes Trading-Card-Design */
+        /* Trading-Card-Design */
         .tcg-card {
             position: absolute;
             top: 10px;
@@ -367,7 +367,7 @@
             <div id="saved-team-section" class="saved-team-box" style="display: none;">
                 <div style="font-size: 0.9em; margin-bottom: 8px;">
                     <b>Bisheriges Semester-Team weiterführen:</b><br>
-                    <small style="color: #475569;">(Wer das Team für die neue Runde öffnet, übernimmt heute die Teamleitung)</small>
+                    <small style="color: #475569;">(Wer das Team für die neue Runde öffnet, übernimmt die Teamleitung)</small>
                 </div>
                 <select id="saved-teams-select"></select>
                 <button class="btn" style="margin-top: 4px; background: #2563eb;" onclick="reactivateSavedTeam()">Gewähltes Team für diese Runde öffnen</button>
@@ -383,7 +383,7 @@
             </div>
 
             <h3>Dein Kartendeck (<span id="deck-count">3</span>):</h3>
-            <p class="swipe-hint">Drehe das Karussell durch Wischen oder über die Pfeile</p>
+            <p class="swipe-hint">Drehe durch Wischen oder über die Pfeile</p>
             <div class="cylinder-wrapper" id="carousel-start"></div>
 
             <!-- KARTENTAUSCH-BEREICH (Nur offen, wenn keine Runde aktiv läuft) -->
@@ -395,7 +395,7 @@
 
                 <div id="trade-controls">
                     <p style="font-size: 0.85em; color: #475569; margin-top: 0;">
-                        Drehe dein Kartendeck oben auf die Karte, die du abgeben möchtest:
+                        Drehe dein Kartendeck auf die Karte, die du abgeben möchtest:
                     </p>
                     <button class="btn" style="background: #9333ea;" onclick="createTradeOffer()">Vorderste Karte zum Tausch anbieten</button>
                     <hr style="margin: 14px 0; border: none; border-top: 1px solid #e9d5ff;">
@@ -408,7 +408,7 @@
                     <div>Tausch-Code: <b id="trade-pin-display" style="font-size: 1.3em; color: #701a75;"></b></div>
                     <div id="trade-qrcode"></div>
                     <div id="trade-summary" style="font-size: 0.9em; margin: 10px 0; line-height: 1.4;"></div>
-                    <button class="btn" id="confirm-trade-btn" style="display: none; background: #16a34a;" onclick="confirmTradeSwap()">Tausch jetzt verbindlich abschließen</button>
+                    <button class="btn" id="confirm-trade-btn" style="display: none; background: #16a34a;" onclick="confirmTradeSwap()">Tausch jetzt abschließen</button>
                     <button class="btn btn-outline" onclick="cancelTradeSession()">Tausch abbrechen / schließen</button>
                 </div>
                 <div id="trade-error" class="error-toast"></div>
@@ -417,10 +417,10 @@
 
         <!-- LEADER VIEW -->
         <div id="view-leader">
-            <div class="role-banner role-leader"><b>Du übernimmst die Teamleitung!</b> Drehe den Team-Pool und tippe die vorderste Karte an, um bis zu 5 Karten auszuwählen.</div>
+            <div class="role-banner role-leader"><b>Du übernimmst die Teamleitung</b><br> Wähle bis zu 5 Karten aus dem Team-Pool.</div>
             <h2 style="margin: 5px 0;">Team: <span id="leader-team-name"></span></h2>
             <p style="margin: 5px 0;">PIN: <b id="team-pin-display" style="font-size: 1.5em; color: var(--primary);"></b></p>
-            <p style="font-size: 0.85em; margin-bottom: 5px;">Lass die anderen Personen in deinem Team diesen Code scannen:</p>
+            <p style="font-size: 0.85em; margin-bottom: 5px;">QR-Code scannen um Team beizutreten:</p>
             <div id="qrcode"></div>
 
             <!-- Live Mitglieder-Übersicht -->
@@ -437,18 +437,18 @@
             <div class="cylinder-wrapper" id="carousel-leader-own"></div>
 
             <h3>Team-Karten-Pool (<span id="selected-count">0</span>/5 gewählt):</h3>
-            <p class="swipe-hint">Tippe die vorderste Karte an, um sie für eure Lösung auszuwählen</p>
+            <p class="swipe-hint">Vorderste Karte antippen, um sie auszuwählen</p>
             <div class="cylinder-wrapper" id="carousel-leader-pool"></div>
             
             <div id="leader-error" class="error-toast"></div>
             <button class="btn" id="submit-btn" onclick="submitSolution()">Lösung an Beamer senden</button>
-            <div id="success-message" class="success-msg">Eure Lösung wurde eingereicht! Ihr seid nun für die Belohnungskarte am Ende der Runde freigeschaltet.</div>
+            <div id="success-message" class="success-msg">Lösung wurde eingereicht.</div>
             <button class="btn btn-outline" onclick="leaveCurrentTeam()">Team verlassen / Zurück zum Start</button>
         </div>
 
         <!-- MEMBER VIEW -->
         <div id="view-member">
-            <div class="role-banner role-member"><b>Du bist im Team.</b> Recherchiert gemeinsam! Die Teamleitung wählt die Karten aus.</div>
+            <div class="role-banner role-member"><b>Du bist im Team.</b> Recherchiert gemeinsam. Die Teamleitung wählt die Karten aus.</div>
             <h2 style="margin: 5px 0;">Team: <span id="member-team-name"></span></h2>
             <p style="margin: 5px 0;">PIN: <b id="member-team-pin" style="font-size: 1.5em; color: var(--primary);"></b></p>
 
@@ -466,7 +466,7 @@
             <div class="cylinder-wrapper" id="carousel-member-own"></div>
 
             <h3>Karten-Pool des gesamten Teams:</h3>
-            <p class="swipe-hint">Drehe den Zylinder, um alle Karten eures Teams zu sehen</p>
+            <p class="swipe-hint">Drehen, um alle Karten des Teams zu sehen</p>
             <div class="cylinder-wrapper" id="carousel-member-pool"></div>
             <button class="btn btn-outline" onclick="leaveCurrentTeam()">Team verlassen / Zurück zum Start</button>
         </div>
@@ -490,7 +490,7 @@
         const MAX_TEAM_SIZE = 5;
         const MAX_SAVED_TEAMS = 3;
 
-        // Strikte Input-Bereinigung gegen XSS und Code-Injection
+        // Input-Bereinigung gegen XSS und Code-Injection
         function sanitizeText(raw, maxLen) {
             if (typeof raw !== "string") return "";
             return raw.replace(/[<>"'`\\/;{}[\]$]/g, "").trim().slice(0, maxLen);
