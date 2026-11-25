@@ -1333,7 +1333,7 @@
                             localStorage.setItem("myInformaticsTCGDeck_v2", JSON.stringify(myDeck));
                         }
                         titleEl.innerText = "Neue Karte freigeschaltet!";
-                        statusEl.innerText = "Danke fürs Mitspielen in dieser Runde! Diese Karte gehört jetzt zu deinem Deck:";
+                        statusEl.innerText = "Danke fürs Mitspielen! Diese Karte ist jetzt in deinem Deck:";
                         const el = createCardElement(cardKey, false);
                         if (el) document.getElementById("reward-card-container").appendChild(el);
                     } else {
