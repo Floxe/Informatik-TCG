@@ -441,7 +441,7 @@
             <div class="cylinder-wrapper" id="carousel-leader-pool"></div>
             
             <div id="leader-error" class="error-toast"></div>
-            <button class="btn" id="submit-btn" onclick="submitSolution()">Lösung an Beamer senden</button>
+            <button class="btn" id="submit-btn" onclick="submitSolution()">Lösung senden</button>
             <div id="success-message" class="success-msg">Lösung wurde eingereicht.</div>
             <button class="btn btn-outline" onclick="leaveCurrentTeam()">Team verlassen / Zurück zum Start</button>
         </div>
@@ -1561,7 +1561,7 @@
             if (hasSubmitted || selectedCards.length === 0) return;
             let errBox = document.getElementById("leader-error");
             if (currentRoundStatus !== "active") {
-                errBox.innerText = "Die Runde ist am Beamer noch nicht gestartet oder bereits beendet.";
+                errBox.innerText = "Die Runde ist noch nicht gestartet oder bereits beendet";
                 return;
             }
             hasSubmitted = true;
